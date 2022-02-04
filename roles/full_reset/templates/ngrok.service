@@ -1,0 +1,16 @@
+[Unit]
+Description=ngrok
+After=network.target
+
+[Service]
+User=ssaart
+ExecStart=/snap/bin/ngrok start --all --config /home/ssaart/.ngrok2/ngrok.yaml
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+IgnoreSIGPIPE=true
+Restart=always
+RestartSec=3
+Type=simple
+
+[Install]
+WantedBy=multi-user.target

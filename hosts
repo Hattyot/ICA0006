@@ -1,0 +1,11 @@
+s1 ansible_host=192.168.161.95 ansible_user=root
+s2 ansible_host=192.168.161.96 ansible_user=root
+srvr ansible_host=5.tcp.eu.ngrok.io ansible_port=15476 ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa
+[dns_master]
+s1
+
+[dns_slave]
+s2
+
+[all:vars]
+ansible_ssh_private_key_file=/home/ssaart/Documents/TTU/ICA0006/ansible/id_rsa

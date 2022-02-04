@@ -1,0 +1,22 @@
+- name: Update APT cache
+  ansible.builtin.apt:
+    upgrade: yes
+    update_cache: yes
+    cache_valid_time: 86400
+
+- name: get current hostname
+  shell:
+    cmd: hostname
+  register: hostname
+  changed_when: false
+
+- name: set hostname
+  shell:
+    cmd: "hostnamectl set-hostname srvr-{{ inventory_hostname[-1] }}"
+  when: "'srvr-{{ inventory_hostname[-1] }}' != hostname.stdout"
+
+- name: add hostname to /etc/hosts
+  become: true
+  blockinfile:
+    path: /etc/hosts
+    block: "127.0.0.1 srvr-{{ inventory_hostname[-1] }}"
