@@ -39,6 +39,15 @@ ___
 * dns -> switches the nameservers to bind9 name servers
   * Files:
     * resolv.conf -> resolver conf file
+* full_reset -> Fully resets all servers except the external one
+  * Files:
+    * 000-default.conf -> apache2 site conf
+    * apache.conf -> apache2 conf
+    * auto-install-1.cfg -> cloud-init conf for server 1
+    * auto-install-2.cfg -> cloud-init conf for server 2
+    * auto-install-3.cfg -> cloud-init conf for server 3
+    * ngrok.service -> ngrok service file
+    * ngrok.yaml -> ngrok conf file
 ___
 ### Group vars
 * domain_name -> bind9 domain name
@@ -48,6 +57,16 @@ ___
 * ptr_domain_name -> ptr domain name
 * dns_forwarders -> nameservers to use when local bind9 cant resolve something
 * dns_allowed -> list of ips which are allowed to use dns
+* public_key -> ssh public key used to authorize ssh sessions to main accounts on servers
+* root_public_key -> public key used to authorize ssh sessions to root accounts on servers
+* iso_download_url -> direct url to latest release of ubuntu 20.04
+* password_hash -> password hashes used to create accounts on servers
+* ilo_ip -> hp ilo ips of the servers, used to contact the server through the api
+* ngrok_auth_token -> encrypted ngrok auth token, used to authenticate ngrok on external server.
+It is required because the current external server is behind NAT.
+* ngrok_region -> ngrok region the tunnel operates in.
+* ngrok_hostname -> domain reserved through ngrok
+* apache_dir -> dir in which the files in the apache server will be stored in.
 ___
 ### Encrypt and Decrypt
 Encrypt strings

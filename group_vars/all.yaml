@@ -17,6 +17,15 @@ dns_update_key: !vault |
           32373132643631326131646163646331626632353362316166326439613762333831393339333962
           6566303033366661386639333066356438333338623464323434
 ptr_domain_name: "{{ reverse }}.in-addr.arpa"
+dns_forwarders:
+  - 1.1.1.1
+  - 8.8.8.8
+  - 8.8.4.4
+dns_allowed:
+  - localhost
+  - 192.168.161.0/24
+  - 127.0.0.0/8
+
 public_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDD2Sk5vY2W9AKgRIOY2p0DK2DyzfRw3U+XjewLDMfW5/jlFYKoOhyJUjB5z2X78yp453FtFIl6pxNTxzVl5o+wXp2URycI2tBvFNVdV0oj9I+4X7Mcy4B1Dm6BJtsGmHMahOHDYckN5VWBZzX0hBGS5HhRq/1GjI+USJyn2+i/XxLs9jPnOBEJUX7HtuUUBtILB/3KNf+9MEWtKqv/LFU+G8B/wv1p7EmaVeS7xBpVZeVGm0QOJf857mHqVsKewBZghUpkklbV7hOxuUlacqkFvvgfn9UxFkr1uqI2wbM5vJ4mspvQudoBoiceUbZc2dFP9cA5355InKy0mPQBcujeGk2R3HpGdIpIHeCPVf7hECFaPAuyv1f49kPPFQc9IoqmMmeJtLW4kYOcKrTLsBXcJ3AIFGEtxP5GQJDDjroJ7fjwsu1QiQM0FaloR6zT7DfVbMzCDSAa0XNsNgBOtK22xyUx4JESwa8cB/Q8zm5vdYrLRvIfwJoR9hq7U9GKiXk=
 root_public_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCzQ+Wb4ciHXsivHi9zgSMOKUObQgF0qRVeeZ7Jv1vwSoKyvtmRWur5gM6dtwcTonIwTKpuSebFXvuv8rzwJgNlW4tuyZ4J1TWYj89PYXBqs19oz7+FnnQpqgIIbEf7gB+7JEx3d19Q2YualXRPXE60tJqfzbx+GwhlCKfhUc1+19jc1QYNPaLEE/P7D0KNvh1fEQE3AxMqdrwWBa186r6eSx3rgDWnNDeg6E/FwaVWkKxhhZKRI03rRakAKvL/DIuNZ8ukU6kNdUe7U+eX91q2zwbgQgfMa1STgiLvzEA1f30XAhksDZw30vYiB4B35jlliXBjQ9aRB8l1OH+ubH8hFvRMnOxUt3SxsfWomeCJOA2RN1bqhT7EAVvZTBMfWlgVOD/wDlto21+aogJYRyGYJKw5D/3qltwe91qgSVqkWxcILYTk+YKcCYWQT1IChz/+2IAAcfsIgMw1IJi4VYdatFOLPIEgzvClECiIiDOriLPxuG5P9fQQL/qCFeLX/Os=
 iso_download_url: https://releases.ubuntu.com/focal/ubuntu-20.04.3-live-server-amd64.iso
@@ -41,12 +50,3 @@ ngrok_auth_token: !vault |
 ngrok_region: eu
 ngrok_hostname: hattyot.pi.eu.ngrok.io
 apache_dir: /var/www/html
-
-dns_forwarders:
-  - 1.1.1.1
-  - 8.8.8.8
-  - 8.8.4.4
-dns_allowed:
-  - localhost
-  - 192.168.161.0/24
-  - 127.0.0.0/8

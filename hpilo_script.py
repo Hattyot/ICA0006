@@ -30,6 +30,14 @@ def parse_options():
 
 
 def boot_to_iso(host, iso_host, iso_name):
+    """
+    Boots the given hp proliant server to the given iso.
+
+    :param host: ip for the hp ilo which needs to be booted to iso
+    :param iso_host: url to the file server which hosts the iso
+    :param iso_name: name of the iso file
+    :return:
+    """
     ilo = hpilo.Ilo(host, login='student', password='student1234', timeout=6000, ssl_context=ssl.SSLContext(ssl.PROTOCOL_TLSv1_1))
     ilo.ssl_context.set_ciphers('ALL:@SECLEVEL=0')
     ilo.insert_virtual_media('cdrom', f'{iso_host}/{iso_name}')
