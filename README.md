@@ -13,11 +13,10 @@ ansible-playbook infra.yaml --vault-password-file /path/to/vault/password/file
 ```
 ___
 ### Hosts
-There are 4 hosts
-* s1 - server 1 | 192.168.161.91
-* s2 - server 2 | 192.168.161.92
-* s3 - server 3 | 192.168.161.93
-* s4 - server 4 | 192.168.161.94  (doesn't exist yet)
+There are 3 hosts
+* s1 - server 1 | 192.168.161.95
+* s2 - server 2 | 192.168.161.96
+* s3 - server 3 | 192.168.161.97
 ---
 ### Groups
 * dns_master - specifies which host is dns master
