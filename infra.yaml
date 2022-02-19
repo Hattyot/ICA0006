@@ -4,9 +4,22 @@
     become: yes
     roles:
       - init
-      - dns
-      - bind
     tags: init
+
+  - name: pre-ceph
+    hosts: hp_servers
+    roles:
+      - python
+      - bind
+      - dns
+      - ssh
+    tags: pre-ceph
+
+#  - name: ceph
+#    hosts: hp_servers
+#    roles:
+#      - ceph
+#    tags: ceph
 
   - name: full reset part 1
     hosts: srvr

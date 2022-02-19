@@ -1,0 +1,45 @@
+- name: generate rsa ssh key
+  openssh_keypair:
+    owner: "{{ inventory_hostname }}"
+    path: "/home/{{ inventory_hostname }}/.ssh/id_rsa"
+    type: rsa
+    size: 4096
+    state: present
+    force: no
+  register: id_rsa
+  notify: add keys to authorized_keys
+
+- name: generate root rsa ssh key
+  openssh_keypair:
+    owner: root
+    path: "/root/.ssh/id_rsa"
+    type: rsa
+    size: 4096
+    state: present
+    force: no
+  register: root_id_rsa
+  notify: add keys to root authorized_keys
+
+- name: register public key
+  set_fact:
+    public_key: "{{ id_rsa.public_key }}"
+    cacheable: yes
+
+- name: register root public key
+  set_fact:
+    root_public_key: "{{ root_id_rsa.public_key }}"
+    cacheable: yes
+
+- name: add local ssh key to authorized keys
+  authorized_key:
+    user: "{{ inventory_hostname }}"
+    state: present
+    key: "{{ item }}"
+  loop: "{{ public_keys }}"
+
+- name: add local ssh key to root authorized keys
+  authorized_key:
+    user: root
+    state: present
+    key: "{{ item }}"
+  loop: "{{ public_keys }}"

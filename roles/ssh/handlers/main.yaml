@@ -1,0 +1,20 @@
+- name: add keys to authorized_keys
+  authorized_key:
+    user: "{{ inventory_hostname }}"
+    state: present
+    key: "{{ hostvars[item]['public_key'] }}"
+  loop:
+    - s1
+    - s2
+    - s3
+
+- name: add keys to root authorized_keys
+  authorized_key:
+    user: root
+    state: present
+    key: "{{ hostvars[item]['root_public_key'] }}"
+  loop:
+    - s1
+    - s2
+    - s3
+

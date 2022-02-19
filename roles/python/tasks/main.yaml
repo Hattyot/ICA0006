@@ -1,0 +1,25 @@
+- name: install software-properties-common and python3-apt
+  apt:
+    name:
+      - python3-apt
+      - software-properties-common
+    state: present
+
+- name: get-pip.py
+  get_url:
+    url: https://bootstrap.pypa.io/get-pip.py
+    dest: "/home/{{ inventory_hostname }}/get-pip.py"
+
+- name: check pip version
+  shell: "python3 -m pip --version"
+  register: pip_version
+  failed_when: false
+  changed_when: false
+
+- name: run get-pip.py
+  shell: "python3 /home/{{ inventory_hostname }}/get-pip.py"
+  when: "'No module named' in pip_version.stdout"
+
+- name: install python3-pip
+  apt:
+    name: python3-pip

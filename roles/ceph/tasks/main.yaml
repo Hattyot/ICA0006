@@ -1,0 +1,8 @@
+- name: install ceph-deploy
+  pip:
+    name: git+https://github.com/ceph/ceph-deploy.git
+
+
+- name: install rados
+  pip:
+    name: rados

@@ -1,5 +1,5 @@
 - name: Update APT cache
-  ansible.builtin.apt:
+  apt:
     upgrade: yes
     update_cache: yes
     cache_valid_time: 86400
@@ -20,3 +20,8 @@
   blockinfile:
     path: /etc/hosts
     block: "127.0.0.1 srvr-{{ inventory_hostname[-1] }}"
+
+- name: add user to sudoers group with nopasswd
+  copy:
+    dest: "/etc/sudoers.d/{{ inventory_hostname }}"
+    content: "{{ inventory_hostname }} ALL=(ALL) NOPASSWD:ALL"
