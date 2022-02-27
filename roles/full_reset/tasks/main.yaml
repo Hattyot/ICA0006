@@ -80,7 +80,7 @@
 
 - name: download ubuntu 20.04 iso
   get_url:
-    url: https://releases.ubuntu.com/focal/ubuntu-20.04.3-live-server-amd64.iso
+    url: https://releases.ubuntu.com/focal/ubuntu-20.04.4-live-server-amd64.iso
     dest: "{{ apache_dir }}/ubuntu.iso"
 
 - name: run auto-install script
