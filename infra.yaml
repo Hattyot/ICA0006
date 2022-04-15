@@ -1,5 +1,5 @@
 ---
-  - name: Init
+  - name: init
     hosts: hp_servers
     become: yes
     roles:
@@ -7,8 +7,8 @@
       - hosts
     tags: init
 
-  - name: pre-ceph
-    hosts: cephadm
+  - name: requirements
+    hosts: hp_servers
     roles:
       - python
       - ssh
@@ -39,10 +39,10 @@
   - name: cephadm_config
     hosts: cephadm
     roles:
-      - ceph_dashboard
+      - ceph_mgr
     tags: config
 
-  - name: full reset part 1
+  - name: full reset
     hosts: restart_server
     become: yes
     roles:

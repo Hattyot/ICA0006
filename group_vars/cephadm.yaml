@@ -1,5 +1,3 @@
-admin_hostname: "{{ hostvars[groups['cephadm'][0]]['ansible_hostname'] }}"
-
 initial_dashboard_user: admin
 initial_dashboard_password: !vault |
           $ANSIBLE_VAULT;1.1;AES256
@@ -10,13 +8,7 @@ initial_dashboard_password: !vault |
           3466
 fsid: 7eec669e-b41a-11ec-9909-e160ce8bfa0b
 admin_keyring_file: /etc/ceph/ceph.client.admin.keyring
-conf_file: /etc/ceph/ceph.conf
-
 osd_partitions: [vg0/lv0, vg1/lv1, vg2/lv2, vg3/lv3]
-
-osd_pool_name:
-  - {name: "{{ admin_hostname }}", pool_name: data.0}
-
 osd_pg_per_pool: 64
 
 domain_name: ssaart.xyz
