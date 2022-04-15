@@ -1,0 +1,10 @@
+version: '3.4'
+
+services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    network_mode: host
+    volumes:
+      - ./nginx.conf:/etc/nginx/templates/default.conf.template
+      - /etc/letsencrypt/:/etc/letsencrypt/:ro

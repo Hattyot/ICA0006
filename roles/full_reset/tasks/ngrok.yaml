@@ -1,0 +1,20 @@
+- name: install ngrok
+  snap:
+    name: ngrok
+
+- name: copy over ngrok config
+  template:
+    src: ngrok.yaml
+    dest: /home/ssaart/.ngrok2/ngrok.yaml
+
+- name: copy over ngrok service
+  template:
+    src: ngrok.service
+    dest: /lib/systemd/system/ngrok.service
+
+- name: start enable ngrok
+  systemd:
+    name: ngrok.service
+    daemon_reload: yes
+    enabled: yes
+    state: started

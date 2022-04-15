@@ -1,0 +1,23 @@
+- name: get current garfana key
+  shell:
+    cmd: "ceph config-key get mgr/cephadm/grafana_key"
+  register: current_key
+  changed_when: false
+
+- name: get letsencrypt key
+  shell:
+    cmd: "cat /etc/letsencrypt/live/{{ domain_name }}/privkey.pem"
+  register: letsencrypt_key
+  changed_when: false
+
+- name: set grafana certificate
+  shell:
+    cmd: "ceph config-key set mgr/cephadm/grafana_crt -i /etc/letsencrypt/live/{{ domain_name }}/cert.pem"
+  when: letsencrypt_key.stdout != current_key.stdout
+  notify: redeploy dashboard
+
+- name: set grafana certificate key
+  shell:
+    cmd: "ceph config-key set mgr/cephadm/grafana_key -i /etc/letsencrypt/live/{{ domain_name }}/privkey.pem"
+  when: letsencrypt_key.stdout != current_key.stdout
+  notify: redeploy dashboard

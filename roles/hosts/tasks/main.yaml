@@ -1,0 +1,19 @@
+- name: Update the /etc/hosts with username
+  lineinfile:
+    path: "/etc/hosts"
+    regexp: ".*\t{{ hostvars[item]['ansible_hostname'] }}\t{{ item }}$"
+    line: "{{ hostvars[item]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}\t{{ hostvars[item]['ansible_hostname']}}\t{{ item }}"
+    state: present
+    backup: yes
+  when: ansible_hostname != "{{ item }}" or ansible_hostname == "{{ item }}"
+  with_items: "{{groups['hp_servers']}}"
+
+- name: Update the /etc/hosts with hostname
+  lineinfile:
+    path: "/etc/hosts"
+    regexp: ".*\t{{ hostvars[item]['ansible_hostname'] }}\t{{ hostvars[item]['ansible_hostname'] }}$"
+    line: "{{ hostvars[item]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}\t{{ hostvars[item]['ansible_hostname']}}\t{{ hostvars[item]['ansible_hostname'] }}"
+    state: present
+    backup: yes
+  when: ansible_hostname != "{{ item }}" or ansible_hostname == "{{ item }}"
+  with_items: "{{groups['hp_servers']}}"

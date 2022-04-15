@@ -1,0 +1,20 @@
+- name: install requirements for hpilo script on local system
+  become_user: ssaart
+  pip:
+    name: python-hpilo
+  delegate_to: 127.0.0.1
+
+#- name: boot other hosts to new iso
+#  become_user: ssaart
+#  shell:
+#    cmd: "python hpilo_script.py \
+#          --host {{ ilo_ip[item] }} \
+#          --iso-host http://{{ ngrok_hostname }} \
+#          --iso-name ubuntu-auto-{{ item[-1] }}.iso \
+#          --username {{ ilo_username }} \
+#          --password {{ ilo_password }}"
+#  delegate_to: 127.0.0.1
+#  loop:
+#    - "s1"
+##    - "s2"
+##    - "s3"

@@ -1,0 +1,15 @@
+- name: check if keyring exists
+  stat:
+    path: "{{ admin_keyring_file }}"
+  register: admin_keyring
+
+- name: run cephadm bootstrap
+  shell:
+    cmd: "cephadm bootstrap
+    --config /etc/ceph/initial-ceph.conf
+    --initial-dashboard-user {{ initial_dashboard_user }}
+    --initial-dashboard-password {{ initial_dashboard_password }}
+    --fsid {{ fsid }}
+    --mon-ip {{ hostvars['s1']['ansible_default_ipv4']['address'] }}
+    --dashboard-password-noupdate"
+  when: not admin_keyring.stat.exists

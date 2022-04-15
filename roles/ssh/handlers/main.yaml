@@ -2,19 +2,17 @@
   authorized_key:
     user: "{{ inventory_hostname }}"
     state: present
-    key: "{{ hostvars[item]['public_key'] }}"
-  loop:
-    - s1
-    - s2
-    - s3
+    key: "{{ hostvars[item]['public_key'] }} {{ item }}"
+  loop: groups['hp_servers']
 
 - name: add keys to root authorized_keys
   authorized_key:
     user: root
     state: present
-    key: "{{ hostvars[item]['root_public_key'] }}"
-  loop:
-    - s1
-    - s2
-    - s3
+    key: "{{ hostvars[item]['root_public_key'] }} {{ item }}"
+  loop: groups['hp_servers']
 
+- name: restart sshd
+  systemd:
+    name: sshd
+    state: restarted

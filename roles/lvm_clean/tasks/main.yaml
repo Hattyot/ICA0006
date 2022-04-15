@@ -1,0 +1,11 @@
+- name: clean ceph
+  shell: sudo apt purge ceph* -y && sudo rm -R /var/lib/ceph/
+  failed_when: false
+
+- name: clean lvm
+  shell: sudo lvremove /dev/vg0/lv0 -y && sudo lvremove /dev/vg1/lv1 -y && sudo lvremove /dev/vg2/lv2 -y && sudo lvremove /dev/vg3/lv3 -y
+  failed_when: false
+
+- name: make lvm
+  shell: sudo lvcreate -l 100%FREE -n lv0 vg0 -y && sudo lvcreate -l 100%FREE -n lv1 vg1 -y && sudo lvcreate -l 100%FREE -n lv2 vg2 -y && sudo lvcreate -l 100%FREE -n lv3 vg3 -y
+  failed_when: false

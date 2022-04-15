@@ -43,3 +43,9 @@
     state: present
     key: "{{ item }}"
   loop: "{{ public_keys }}"
+
+- name: overwrite sshd_config
+  template:
+    src: sshd_config
+    dest: /etc/ssh/sshd_config
+  notify: restart sshd

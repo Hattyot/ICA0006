@@ -1,0 +1,5 @@
+- name: restart nginx container
+  community.docker.docker_compose:
+    project_src: /etc/nginx
+    build: no
+    restarted: yes

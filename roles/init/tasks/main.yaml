@@ -1,8 +1,11 @@
 - name: Update APT cache
   apt:
-    upgrade: yes
     update_cache: yes
     cache_valid_time: 86400
+
+- name: Upgrade apt
+  apt:
+    upgrade: yes
 
 - name: get current hostname
   shell:

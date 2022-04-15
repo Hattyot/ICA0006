@@ -1,28 +1,49 @@
 ---
   - name: Init
-    hosts: all
+    hosts: hp_servers
     become: yes
     roles:
       - init
+      - hosts
     tags: init
 
   - name: pre-ceph
-    hosts: hp_servers
+    hosts: cephadm
     roles:
       - python
-      - bind
-      - dns
       - ssh
+      - docker
     tags: pre-ceph
 
-#  - name: ceph
-#    hosts: hp_servers
-#    roles:
-#      - ceph
-#    tags: ceph
+  - name: network
+    hosts: cephadm
+    roles:
+      - nginx_docker
+      - letsencrypt
+    tags: network
+
+  - name: clean lvm
+    hosts: cephadm
+    roles:
+      - lvm_clean
+    tags:
+      - clean
+      - never
+
+  - name: cephadm
+    hosts: cephadm
+    roles:
+      - cephadm
+    tags: cephadm
+
+  - name: cephadm_config
+    hosts: cephadm
+    roles:
+      - ceph_dashboard
+    tags: config
 
   - name: full reset part 1
-    hosts: srvr
+    hosts: restart_server
     become: yes
     roles:
       - full_reset

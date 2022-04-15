@@ -1,0 +1,8 @@
+service_type: osd
+service_id: default_drive_group
+placement:
+  host_pattern: '*'
+data_devices:
+  paths:
+  {% for partition in osd_partitions %}  - "/dev/{{ partition }}"
+  {% endfor %}

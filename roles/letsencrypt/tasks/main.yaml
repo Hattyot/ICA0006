@@ -1,0 +1,30 @@
+- name: install letsencrypt and nginx
+  apt:
+    name: letsencrypt
+
+- name: Check that the cert doesnt exist
+  stat:
+    path: "/etc/letsencrypt/live/{{ domain_name }}/privkey.pem"
+  register: cert
+
+- name: enusre scripts dir
+  file:
+    path: /home/{{ inventory_hostname }}/scripts
+    state: directory
+
+- name: copy over scripts
+  template:
+    src: certbot.sh
+    dest: /home/{{ inventory_hostname }}/scripts/certbot.sh
+    mode: "+x"
+
+- name: certbot plugins
+  pip:
+    name:
+      - certbot-nginx
+      - cffi
+
+- name: create letsencrypt cert
+  shell:
+    cmd: /home/{{ inventory_hostname }}/scripts/certbot.sh
+  when: not cert.stat.exists

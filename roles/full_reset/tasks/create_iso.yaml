@@ -1,0 +1,40 @@
+- name: copy over auto-install-1.cfg to apache
+  template:
+    src: "auto-install-1.cfg"
+    dest: "{{ apache_dir }}/auto-install-1.cfg"
+    mode: +x
+  register: user_data_1
+
+- name: copy over auto-install-2.cfg to apache
+  template:
+    src: "auto-install-2.cfg"
+    dest: "{{ apache_dir }}/auto-install-2.cfg"
+    mode: +x
+  register: user_data_2
+
+- name: copy over auto-install-3.cfg to apache
+  template:
+    src: "auto-install-3.cfg"
+    dest: "{{ apache_dir }}/auto-install-3.cfg"
+    mode: +x
+  register: user_data_3
+
+- name: get autoinstall script
+  get_url:
+    url: https://raw.githubusercontent.com/covertsh/ubuntu-autoinstall-generator/main/ubuntu-autoinstall-generator.sh
+    dest: "{{ apache_dir }}/ubuntu-autoinstall-generator.sh"
+    mode: +x
+
+- name: download ubuntu 20.04 iso
+  get_url:
+    url: https://releases.ubuntu.com/focal/ubuntu-20.04.4-live-server-amd64.iso
+    dest: "{{ apache_dir }}/ubuntu.iso"
+
+- name: run auto-install script
+  shell:
+    cmd: "{{ apache_dir }}/ubuntu-autoinstall-generator.sh -a -u {{ apache_dir }}/{{ item }} -s {{ apache_dir }}/ubuntu.iso -d {{ apache_dir }}/ubuntu-auto-{{ item[-5] }}.iso -k "
+  loop:
+    - auto-install-1.cfg
+    - auto-install-2.cfg
+    - auto-install-3.cfg
+  when: (item == 'auto-install-1.cfg' and user_data_1.changed) or (item == 'auto-install-2.cfg' and user_data_2.changed) or (item == 'auto-install-3.cfg' and user_data_3.changed)

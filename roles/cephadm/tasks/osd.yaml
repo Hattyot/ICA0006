@@ -1,0 +1,16 @@
+- name: copy over osd spec file
+  template:
+    src: osd_spec.yaml
+    dest: /etc/ceph/osd_spec.yaml
+  register: osd_spec
+
+- name: check if osds have been created
+  shell:
+    cmd: "ceph osd stat | grep -oP '^(\\d+)'"
+  register: osd_num
+  changed_when: false
+
+- name: apply osd spec
+  shell:
+    cmd: "ceph orch apply -i /etc/ceph/osd_spec.yaml"
+  when: osd_num.stdout != osd_partitions.__len__().__str__() or osd_spec.changed

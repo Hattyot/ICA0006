@@ -1,0 +1,11 @@
+- name: check if crush rule exists
+  shell:
+    cmd: "ceph osd crush rule ls | grep replicated_rule_osd"
+  register: crush_rule
+  failed_when: false
+  changed_when: false
+
+- name: create cursh rule
+  shell:
+    cmd: "ceph osd crush rule create-replicated replicated_rule_osd default osd"
+  when: crush_rule.stdout == ""

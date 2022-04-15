@@ -1,0 +1,11 @@
+- name: get current dashboard ssl status
+  shell:
+    cmd: "ceph config get mgr mgr/dashboard/ssl"
+  register: dashboard_ssl
+  changed_when: false
+
+- name: disable dashboard ssl
+  shell:
+    cmd: "ceph config set mgr mgr/dashboard/ssl false"
+  notify: redeploy dashboard
+  when: dashboard_ssl.stdout != "false"

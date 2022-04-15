@@ -1,0 +1,3 @@
+- name: redeploy dashboard
+  shell:
+    cmd: "ceph mgr module disable dashboard && ceph mgr module enable dashboard"

@@ -1,0 +1,2 @@
+- import_tasks: dashboard.yaml
+- import_tasks: grafana.yaml
