@@ -21,10 +21,29 @@
 - name: certbot plugins
   pip:
     name:
-      - certbot-nginx
+      - certbot-dns-cloudflare
       - cffi
+
+- name: copy over cloudflare.ini
+  template:
+    src: cloudflare.ini
+    dest: /home/{{ inventory_hostname }}/scripts/cloudflare.ini
 
 - name: create letsencrypt cert
   shell:
     cmd: /home/{{ inventory_hostname }}/scripts/certbot.sh
   when: not cert.stat.exists
+
+- name: check if chain and key combination exists
+  stat:
+    path: /etc/ssl/{{ domain_name }}/{{ domain_name }}.pem
+  register: combination
+
+- name: ensure /etc/ssl/ dir
+  file:
+    path: "/etc/ssl/{{ domain_name }}"
+    state: directory
+
+- name: combine fullchain and key
+  shell: "cat /etc/letsencrypt/live/{{ domain_name }}/fullchain.pem /etc/letsencrypt/live/{{ domain_name }}/privkey.pem > /etc/ssl/{{ domain_name }}/{{ domain_name }}.pem"
+  when: not combination.stat.exists

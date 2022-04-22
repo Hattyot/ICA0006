@@ -14,9 +14,9 @@ ansible-playbook infra.yaml --vault-password-file /path/to/vault/password/file
 ___
 ### Hosts
 There are 3 hosts
-* s1 - server 1 | 192.168.161.95
-* s2 - server 2 | 192.168.161.96
-* s3 - server 3 | 192.168.161.97
+* s1 - server 1 | 192.168.161.85
+* s2 - server 2 | 192.168.161.86
+* s3 - server 3 | 192.168.161.87
 * srvr - Outside server which facilitates main server restarts
 ---
 ### Groups

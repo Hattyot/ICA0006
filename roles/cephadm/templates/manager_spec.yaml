@@ -1,0 +1,27 @@
+service_type: mgr
+service_name: mgr
+placement:
+  hosts:
+    - {{ hostnames[groups['hp_servers'][0]] }}
+    - {{ hostnames[groups['hp_servers'][-1]] }}
+---
+service_type: prometheus
+service_name: prometheus
+placement:
+  hosts:
+    - {{ hostnames[groups['hp_servers'][0]] }}
+    - {{ hostnames[groups['hp_servers'][-1]] }}
+---
+service_type: grafana
+service_name: grafana
+placement:
+  hosts:
+    - {{ hostnames[groups['hp_servers'][0]] }}
+    - {{ hostnames[groups['hp_servers'][-1]] }}
+---
+service_type: alertmanager
+service_name: alertmanager
+placement:
+  hosts:
+    - {{ hostnames[groups['hp_servers'][0]] }}
+    - {{ hostnames[groups['hp_servers'][-1]] }}

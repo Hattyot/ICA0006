@@ -5,11 +5,13 @@
     roles:
       - init
       - hosts
+      - journalctl
     tags: init
 
   - name: requirements
     hosts: hp_servers
     roles:
+      - ntp
       - python
       - ssh
       - docker
@@ -18,17 +20,25 @@
   - name: network
     hosts: cephadm
     roles:
-      - nginx_docker
+      - cloudflare
       - letsencrypt
     tags: network
 
-  - name: clean lvm
-    hosts: cephadm
+  - name: clean_lvm
+    hosts: hp_servers
     roles:
       - lvm_clean
     tags:
       - clean
       - never
+
+  - name: cephmgr requirements
+    hosts: cephmgr
+    roles:
+      - keepalived
+      - nginx_docker
+      - ceph
+    tags: cephmgr
 
   - name: cephadm
     hosts: cephadm
@@ -37,10 +47,29 @@
     tags: cephadm
 
   - name: cephadm_config
-    hosts: cephadm
+    hosts: cephmgr
     roles:
       - ceph_mgr
     tags: config
+
+  - name: influxdb
+    hosts: influxdb
+    roles:
+      - influxdb
+      - telegraf
+    tags: influxdb
+
+  - name: logs
+    hosts: hp_servers
+    roles:
+      - rsyslog
+    tags: logs
+
+  - name: rbd
+    hosts: cephmgr
+    roles:
+      - rbd
+    tags: rbd
 
   - name: full reset
     hosts: restart_server

@@ -1,0 +1,22 @@
+- name: add vrrp ip as a record to cloudflare dns
+  cloudflare_dns:
+    zone: "{{ domain_name }}"
+    type: A
+    record: "{{ domain_name }}"
+    value: "{{ vrrp_ip }}"
+    ttl: 60
+    api_token: "{{ cloudflare_zone_edit_token }}"
+    state: present
+  failed_when: false
+  no_log: true
+
+- name: add www cname
+  cloudflare_dns:
+    zone: "{{ domain_name }}"
+    type: CNAME
+    value: "www.{{ domain_name }}"
+    ttl: 60
+    api_token: "{{ cloudflare_zone_edit_token }}"
+    state: present
+  failed_when: false
+  no_log: true

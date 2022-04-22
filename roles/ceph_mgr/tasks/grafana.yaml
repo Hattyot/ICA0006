@@ -1,8 +1,26 @@
+- name: get current grafana api url
+  shell:
+    cmd: "ceph dashboard get-grafana-api-url"
+  register: grafana_api_url
+  changed_when: false
+
+- name: set grafana api url
+  shell:
+    cmd: "ceph dashboard set-grafana-api-url https://{{ domain_name }}:3000/"
+  when: grafana_api_url.stdout != "https://{{ domain_name }}:3000/"
+
 - name: get current garfana key
   shell:
     cmd: "ceph config-key get mgr/cephadm/grafana_key"
   register: current_key
   changed_when: false
+
+- name: sync letsencrypt
+  synchronize:
+    src: /etc/letsencrypt
+    dest: /etc
+  delegate_to: "{{ groups['cephadm'][0] }}"
+  when: "'{{ inventory_hostname }}' != '{{ groups['cephadm'][0] }}'"
 
 - name: get letsencrypt key
   shell:
@@ -21,3 +39,15 @@
     cmd: "ceph config-key set mgr/cephadm/grafana_key -i /etc/letsencrypt/live/{{ domain_name }}/privkey.pem"
   when: letsencrypt_key.stdout != current_key.stdout
   notify: redeploy dashboard
+
+- name: copy over grafana.ini
+  template:
+    src: grafana.ini
+    dest: /etc/ceph/grafana.ini
+  register: grafana_ini
+
+- name: set grafana.ini
+  template:
+    src: grafana.ini
+    dest: "/var/lib/ceph/{{ fsid }}/grafana.{{ hostvars[inventory_hostname]['ansible_hostname'] }}/etc/grafana/grafana.ini"
+  notify: restart grafana

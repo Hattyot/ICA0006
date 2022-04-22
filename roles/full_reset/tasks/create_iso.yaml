@@ -37,4 +37,3 @@
     - auto-install-1.cfg
     - auto-install-2.cfg
     - auto-install-3.cfg
-  when: (item == 'auto-install-1.cfg' and user_data_1.changed) or (item == 'auto-install-2.cfg' and user_data_2.changed) or (item == 'auto-install-3.cfg' and user_data_3.changed)

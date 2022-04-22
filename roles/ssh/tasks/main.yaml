@@ -7,7 +7,9 @@
     state: present
     force: no
   register: id_rsa
-  notify: add keys to authorized_keys
+  notify:
+    - add public keys to user authorized_keys
+    - add root public keys to user authorized_keys
 
 - name: generate root rsa ssh key
   openssh_keypair:
@@ -18,7 +20,9 @@
     state: present
     force: no
   register: root_id_rsa
-  notify: add keys to root authorized_keys
+  notify:
+    - add root public key to root authorized_keys
+    - add public key to root authorized_keys
 
 - name: register public key
   set_fact:
@@ -45,7 +49,7 @@
   loop: "{{ public_keys }}"
 
 - name: overwrite sshd_config
-  template:
+  copy:
     src: sshd_config
     dest: /etc/ssh/sshd_config
   notify: restart sshd

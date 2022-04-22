@@ -1,2 +1,6 @@
+- name: include cephadm vars
+  include_vars:
+    file: group_vars/cephadm.yaml
+
 - import_tasks: dashboard.yaml
 - import_tasks: grafana.yaml

@@ -1,0 +1,19 @@
+service_type: host
+hostname: {{ hostnames[groups['hp_servers'][0]] }}
+addr: {{ ips[groups['hp_servers'][0]] }}
+labels:
+- _admin
+- grafana
+- prometheus
+---
+service_type: host
+hostname: {{ hostnames[groups['hp_servers'][1]] }}
+addr: {{ ips[groups['hp_servers'][1]] }}
+---
+service_type: host
+hostname: {{ hostnames[groups['hp_servers'][2]] }}
+addr: {{ ips[groups['hp_servers'][2]] }}
+labels:
+- _admin
+- grafana
+- prometheus

@@ -1,0 +1,16 @@
+- name: check if public key already exists
+  stat:
+    path: /root/.ssh/ceph.pub
+  register: ceph_pub_file
+
+- name: get ceph public key
+  shell:
+    cmd: "ceph cephadm get-pub-key > /root/.ssh/ceph.pub"
+  changed_when: false
+  when: not ceph_pub_file.stat.exists
+
+- name: add ceph public key to root authorized keys for all servers
+  shell:
+    cmd: "ssh-copy-id -f -o StrictHostKeyChecking=no -i /root/.ssh/ceph.pub root@{{ item }}"
+  loop: "{{ groups['hp_servers'] }}"
+  when: not ceph_pub_file.stat.exists

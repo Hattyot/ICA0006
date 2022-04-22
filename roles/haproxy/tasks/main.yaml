@@ -1,0 +1,23 @@
+- name: install haproxy
+  apt:
+    name: haproxy
+    state: present
+
+- name: set haproxy conf
+  template:
+    src: haproxy.conf
+    dest: /etc/haproxy/haproxy.cfg
+  notify: restart haproxy
+
+- name: sync /etc/ssl dirs
+  synchronize:
+    src: /etc/ssl
+    dest: /etc
+  delegate_to: "{{ groups['cephadm'][0] }}"
+  when: "'{{ inventory_hostname }}' != '{{ groups['cephadm'][0] }}'"
+
+- name: start enable haproxy
+  service:
+    name: haproxy
+    state: started
+    enabled: yes

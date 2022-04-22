@@ -1,0 +1,33 @@
+- name: ensure /etc/keepalived
+  file:
+    path: /etc/keepalived/
+    state: directory
+
+- name: create keepalived user
+  user:
+    name: keepalived
+    state: present
+
+- name: copy over scripts
+  template:
+    src: keepalived_script.sh
+    dest: /etc/keepalived/keepalived_script.sh
+    mode: +x
+  notify: restart keepalived
+
+- name: copy over keepalived conf
+  template:
+    src: keepalived.conf
+    dest: /etc/keepalived/keepalived.conf
+  notify: restart keepalived
+
+- name: install keepalived
+  apt:
+    name: keepalived
+    state: present
+
+- name: start enable keepalived service
+  service:
+    name: keepalived
+    state: started
+    enabled: yes

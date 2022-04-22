@@ -11,7 +11,4 @@ admin_keyring_file: /etc/ceph/ceph.client.admin.keyring
 osd_partitions: [vg0/lv0, vg1/lv1, vg2/lv2, vg3/lv3]
 osd_pg_per_pool: 64
 
-domain_name: ssaart.xyz
 certbot_email: ssaart@ttu.ee
-dashboard_ssl_port: 8443
-dashboard_port: 8080

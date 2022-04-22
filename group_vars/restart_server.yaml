@@ -1,20 +1,8 @@
-hostnames:
-  s1: srvr-1
-  s2: srvr-2
-  s3: srvr-3
-
-ips:
-  s1: 192.168.161.95
-  s2: 192.168.161.96
-  s3: 192.168.161.97
-
 ilo_ip:
   s1: 192.168.161.101
   s2: 192.168.161.102
   s3: 192.168.161.103
 
-default_gateway: 192.168.161.254
-name_servers: [8.8.8.8, 8.8.4.4]
 ubuntu_archive: http://archive.ubuntu.com/ubuntu/
 
 ngrok_auth_token: !vault |

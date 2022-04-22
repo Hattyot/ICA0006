@@ -18,12 +18,6 @@
     cmd: "hostnamectl set-hostname srvr-{{ inventory_hostname[-1] }}"
   when: "'srvr-{{ inventory_hostname[-1] }}' != hostname.stdout"
 
-- name: add hostname to /etc/hosts
-  become: true
-  blockinfile:
-    path: /etc/hosts
-    block: "127.0.0.1 srvr-{{ inventory_hostname[-1] }}"
-
 - name: add user to sudoers group with nopasswd
   copy:
     dest: "/etc/sudoers.d/{{ inventory_hostname }}"

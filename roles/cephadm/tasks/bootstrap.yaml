@@ -13,3 +13,16 @@
     --mon-ip {{ hostvars['s1']['ansible_default_ipv4']['address'] }}
     --dashboard-password-noupdate"
   when: not admin_keyring.stat.exists
+  register: bootstrap
+  no_log: true
+
+- name: Pause for 30 seconds
+  pause:
+    seconds: 30
+  when: bootstrap.changed
+
+- name: start enable ceph.target
+  systemd:
+    name: ceph.target
+    state: started
+    enabled: yes

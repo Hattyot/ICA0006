@@ -1,0 +1,9 @@
+- name: install ntp
+  apt:
+    name: ntp
+
+- name: copy over ntp conf file
+  copy:
+    src: ntp.conf
+    dest: /etc/ntp.conf
+  notify: restart ntp

@@ -1,0 +1,40 @@
+- name: include rbd vars
+  include_vars:
+    file: group_vars/rbd.yaml
+
+- name: check if rbd pool exists
+  shell:
+    cmd: "ceph osd pool ls | grep rbd"
+  register: data_pool
+  changed_when: false
+  failed_when: false
+
+- name: create rbd pool
+  shell:
+    cmd: "ceph osd pool create rbd {{ osd_pg_per_pool }} replicated"
+  when: data_pool.stdout == ""
+
+- name: check if application already enabled
+  shell: "ceph osd pool application get rbd | grep rbd"
+  register: rbd_application
+  changed_when: false
+
+- name: enable rbd application on rbd pool
+  shell:
+    cmd: ceph osd pool application enable rbd rbd
+  when: rbd_application.stdout == ""
+
+- name: enable rbd application on rbd pool
+  shell:
+    cmd: rbd pool init -p rbd
+  when: rbd_application.stdout == ""
+
+- import_tasks: agama.yaml
+
+# sideline rsyslog for now
+#- import_tasks: rsyslog.yaml
+
+#- name: copy over rbdmap
+#  template:
+#    src: rbdmap
+#    dest: /etc/ceph/rbdmap

@@ -8,3 +8,15 @@
     name:
       - docker
       - docker-compose
+
+- name: copy over daemon.json
+  copy:
+    src: daemon.json
+    dest: /etc/docker/daemon.json
+  notify: restart docker
+
+- name: start enable docker
+  systemd:
+    name: docker
+    state: started
+    enabled: yes

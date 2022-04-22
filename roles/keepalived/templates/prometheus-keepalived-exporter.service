@@ -1,0 +1,10 @@
+[Unit]
+Description=Prometheus keepalive exporter
+After=network-online.target
+
+[Service]
+User=root
+ExecStart=/usr/local/bin/keepalived-exporter --web.listen-address :{{ keepalived_metrics_port }}
+
+[Install]
+WantedBy=multi-user.target

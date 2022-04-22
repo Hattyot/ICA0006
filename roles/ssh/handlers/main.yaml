@@ -1,16 +1,30 @@
-- name: add keys to authorized_keys
+- name: add public keys to user authorized_keys
   authorized_key:
     user: "{{ inventory_hostname }}"
     state: present
     key: "{{ hostvars[item]['public_key'] }} {{ item }}"
-  loop: groups['hp_servers']
+  loop: "{{ groups['hp_servers'] }}"
 
-- name: add keys to root authorized_keys
+- name: add root public keys to user authorized_keys
+  authorized_key:
+    user: "{{ inventory_hostname }}"
+    state: present
+    key: "{{ hostvars[item]['root_public_key'] }} {{ item }}"
+  loop: "{{ groups['hp_servers'] }}"
+
+- name: add root public key to root authorized_keys
   authorized_key:
     user: root
     state: present
     key: "{{ hostvars[item]['root_public_key'] }} {{ item }}"
-  loop: groups['hp_servers']
+  loop: "{{ groups['hp_servers'] }}"
+
+- name: add public key to root authorized_keys
+  authorized_key:
+    user: root
+    state: present
+    key: "{{ hostvars[item]['public_key'] }} {{ item }}"
+  loop: "{{ groups['hp_servers'] }}"
 
 - name: restart sshd
   systemd:

@@ -14,6 +14,7 @@
 #          --username {{ ilo_username }} \
 #          --password {{ ilo_password }}"
 #  delegate_to: 127.0.0.1
+#  no_log: true
 #  loop:
 #    - "s1"
 ##    - "s2"

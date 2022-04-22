@@ -1,0 +1,4 @@
+service_type: node-exporter
+service_name: node-exporter
+placement:
+  host_pattern: '*'

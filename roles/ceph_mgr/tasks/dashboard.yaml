@@ -9,3 +9,42 @@
     cmd: "ceph config set mgr mgr/dashboard/ssl false"
   notify: redeploy dashboard
   when: dashboard_ssl.stdout != "false"
+
+- name: set alertmanager api host to vrrp ip
+  block:
+  - name: get current alertmanager api host
+    shell:
+      cmd: "ceph dashboard get-alertmanager-api-host"
+    changed_when: false
+    register: alertmanager_api_host
+
+  - name: set alertmanager api host to vrrp ip
+    shell:
+      cmd: "ceph dashboard set-alertmanager-api-host 'http://{{ vrrp_ip }}:9093'"
+    when: "alertmanager_api_host.stdout != 'http://{{ vrrp_ip }}:9093'"
+
+- name: set prometheus api host to vrrp ip
+  block:
+    - name: get current prometheus api host
+      shell:
+        cmd: "ceph dashboard get-prometheus-api-host"
+      changed_when: false
+      register: prometheus_api_host
+
+    - name: set prometheus api host to vrrp ip
+      shell:
+        cmd: "ceph dashboard set-prometheus-api-host 'http://{{ vrrp_ip }}:9095'"
+      when: 'prometheus_api_host.stdout != "http://{{ vrrp_ip }}:9095"'
+
+- name: disable dashboard redirect
+  block:
+    - name: get current redirect status
+      shell:
+        cmd: ceph config get mgr mgr/dashboard/standby_behaviour
+      changed_when: false
+      register: standby_behavior
+
+    - name: set current redirect status to error
+      shell:
+        cmd: ceph config set mgr mgr/dashboard/standby_behaviour 'error'
+      when: standby_behavior.stdout != 'error'

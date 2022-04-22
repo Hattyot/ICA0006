@@ -3,11 +3,7 @@
 - import_tasks: bootstrap.yaml
   tags: bootstrap
 
-- import_tasks: osd.yaml
-  tags: osd
+- import_tasks: ssh.yaml
 
-- import_tasks: crush_rule.yaml
-  tags: crush
-
-- import_tasks: pool.yaml
-  tags: pool
+- import_tasks: specs.yaml
+  tags: specs

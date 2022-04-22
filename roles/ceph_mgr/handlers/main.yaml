@@ -1,3 +1,7 @@
 - name: redeploy dashboard
   shell:
     cmd: "ceph mgr module disable dashboard && ceph mgr module enable dashboard"
+
+- name: restart grafana
+  shell:
+    cmd: "ceph orch restart grafana"
