@@ -1,3 +1,0 @@
-dashboard_ssl_port: 8443
-dashboard_port: 8080
-grafana_port: 3000

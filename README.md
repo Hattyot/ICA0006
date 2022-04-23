@@ -1,7 +1,91 @@
 This is a simple guide to the ansible workings of this project. \
 All of this is designed to run on linux and won't run on anything else.
 ___
-### Requirements
+# Infrastructure
+___
+### Servers
+This cluster has 3 HP ProLiant DL360 G7 Servers.\
+The server specifications can be found [here.](https://support.hpe.com/hpesc/public/docDisplay?docId=emr_na-c02206768)
+Each server has:
+  * 136GB hard drive (x4)
+  * 47G ram
+  * Intel(R) Xeon(R) CPU X5650
+___
+# Ceph Design
+___
+### Hard Drives
+Each server has 4 136G drives in this configuration:
+```
+sda (136G)
+  sda1 (1M) (grub spacer)
+  sda2 (500M) /boot
+    md0 (raid 1 - sdb2)
+  sda3 (15G) /
+    md1 (raid 1 - sdb3)
+  sda4 (121G)
+    lv0/vg0 (osd)
+
+sdb (136G)
+  sdb1 (1M) (grub spacer)
+  sdb2 (500M) /boot
+    md0 (raid 1 - sda2)
+  sdb3 (15G) /
+    md1 (raid 1 - sda3)
+  sdb4 (121G)
+    lv1/vg1 (osd)
+
+sdc (136G)
+  sdc1 (136G)
+    lv2/vg2 (osd)
+sdd (136G)
+  sdd1 (136G)
+    lv3/vg3 (osd)
+```
+More detailed version of this can be viewed in [roles/full_reset/templates/auto-install-1.cfg](./roles/full_reset/templates/auto-install-1.cfg)
+___
+### Operating System
+The operating system used under the ceph cluster is `Ubuntu 20.04`.\
+Ubuntu was chosen because it's easy to use and works well with ceph.
+___
+### Ceph Services
+Each server has:
+* Monitor (x1)
+  * V2 port: 3300
+  * V1 port: 6789
+* Osd (x4)
+* Crash (x1)
+* Node-Exporter (x1)
+
+The servers in the `cephmgr` group also have:
+* Manager (x1)
+  * Dashboard Port: 8080
+  * SSL Dashboard Port: 443 
+* Grafana (x1)
+  * Port: 3000
+* Prometheus (x1)
+  * Port: 9095
+* Alertmanager (x1)
+  * Port: 9093
+___
+### Load Balancing
+Load balancing is handled by keepalived\
+VRRP IP: 192.168.161.88
+
+Priority is based on which dashboard is currently active.
+___
+### SSL & Domain
+Certs are generated with letsencrypt and associated with the `ssaart.xyz` domain.\
+Dns is handled by cloudflare.\
+Records:
+* A -> VRRP IP
+* CNAME -> www -> A record
+___
+### Passwords
+Every password that's set and used is in one of the group_vars files and can be decrypted with the vault password
+___
+# Ansible
+___
+### Ansible Requirements
 * ansible >= 2.11.6
 * python >= 3.9
 * jinja >= 3.0.2
@@ -19,43 +103,70 @@ There are 3 hosts
 * s3 - server 3 | 192.168.161.87
 * srvr - Outside server which facilitates main server restarts
 ---
+### Connecting with the hosts
+Ansible connects to the root account of the hosts through the id_rsa key in the project root directory
+___
 ### Groups
-* restart_server - the group of the restart server
-* hp_servers - main servers which will host osds, monitors and managers
-* cephadm - the admin server which will host the dashboard and manage other servers
+* restart_server - The group of the restart server
+* hp_servers - Main servers which will host osds, monitors and managers
+* cephadm - The admin server which will initialize ceph and install it's components on all the servers
+* cephmgr - The manager servers, which will host the dashboard and it's services
 ___
 ### Playbook
 The playbook is separated into x plays
-* init -> The very basic stuff that needs to come before everything else, update, hosts file update etc.
-* requirements -> Install requirements for other services
-* network -> Sets up the network aspects on the admin server, creates certificates and starts up nginx
-* clean lvm -> Optional play, which removes then adds back all the lvms and ceph
-* cephadm -> The main ceph play, which installs cephadm, bootstraps ceph, creats osds and pools
-* cephadm_config -> Configures ceph after install
+* pre-tasks -> Decrypts the id_rsa key for use
+* init -> The very basic stuff that needs to come before everything else, apt update, hosts file update etc.
+* requirements -> Installs software that's needed on all servers
+* network -> Sets up the network aspects on the admin server, creates certificates and sets up dns
+* cephmgr requirements -> Installs cephmgr services requirements and sets up load balancing
+* cephadm -> Installs cephadm and bootstraps the cluster, then installs all the services on all the hosts
+* ceph config -> Configures ceph services after install
+* rbd -> Sets up rados block device images for services to use
 * full reset -> fully resets the hp_servers to base ubuntu
+* post-tasks -> encrypts the id_rsa key
 ___
 ### Roles
-* init -> Sets up automatic apt cache updates, does apt update and upgrade and sets hostname
+* init -> Sets up automatic apt cache updates, does apt update and upgrade, sets hostname and adds main user to sudoers file.
 * hosts -> Updates hosts file with connections to other servers
+* journalctl -> Configures journald
+  * Files:
+    * journalctl.conf -> journald config file, which sets logs max size to 500M
+* ntp -> Installs and configures ntp
+  * Files:
+    * ntp.conf -> The ntp config files, which sets the pools the servers wil sync with.
 * python -> Installs python 3 and pip3
 * ssh -> Configures sshd, creates ssh keys for servers and gives access from other servers to itself
   * Files:
     * sshd_config -> Minimized sshd config file, allows root login
-* docker -> install docker.io, python-docker and python-docker-compose
+* docker -> install docker.io, python-docker and python-docker-compose and sets docker daemon config
+  * Files:
+    * daemon.json -> Docker daemon config file, sets default log config to journald
+* Cloudflare -> Configures cloudflare dns for the domain
+* letsencrypt -> Creates letsencrypt certs for the dashboard and grafana
+  * Templates:
+    * certbot.sh -> Certbot script which creates the certs
+    * cloudflare.ini -> File containing the cloudflare zone edit token
+* keepalived -> Installs and configures keepalived
+  * Templates:
+    * keepalived.conf -> The keepalived config file, which sets up vrrp
+    * keepalived_script.sh -> Script used to check the current active dashboard
 * nginx_docker -> Sets up nginx docker container
   * Files: 
     * docker-compose.yaml -> docker-compose file for nginx
   * Templates:
     * nginx.conf -> config file for nginx, which sets up ssl for the dashboard
-* letsencrypt -> Creates letsencrypt certs for the dashboard and grafana
-  * Templates:
-    * certbot.sh -> Certbot script which creates the certs
-* lvm_clean -> Removes ceph, removes lvms then adds them back
+* ceph -> installs ceph on non-cephadm servers
 * cephadm -> Installs cephadm, adds osds and pools
   * Templates:
     * ceph.conf -> Initial configuration file used in cephadm bootstrap
     * osd_spec.yaml -> OSD specification file used to create osds
+    * crash_spec.yaml -> Crash specification file used to create crash instances
+    * host_spec.yaml -> Hosts specification file used to add hosts to the cluster
+    * manager_spec.yaml -> Manager specification file used to create manager and its services instances
+    * monitor_spec.yaml -> Monitor specification file used to create monitor instances
+    * node-exporter_spec.yaml -> Node-exporter specification file used to create node-exporter instances
 * ceph_mgr -> Configures ceph manager and its services
+* rbd -> Creates namespaces, users and rbd images for services that use the cluster
 * full_reset -> Fully resets all servers except the external one
   * Templates:
     * 000-default.conf -> apache2 site conf
@@ -68,9 +179,15 @@ ___
 ___
 ### Group vars
 **all.yaml**:
-* domain_name -> bind9 domain name
+* domain_name -> domain used to connect to the cluster
 * public_keys -> ssh public keys used to authorize ssh sessions to main accounts on servers
-* root_public_key -> public key used to authorize ssh sessions to root accounts on servers
+* root_public_key -> public key part of id_rsa key used to authorize ssh sessions to root accounts on servers
+* ips -> Ips assigned to the servers
+* hostnames -> hostnames assigned to the servers
+* default_gateway -> default gateway on the servers' network
+* name_servers -> name servers used on the servers
+* telegraf_port -> port for the telegraf service
+* vrrp_ip -> ip assigned to the vrrp in keepalived
 
 **cephadm.yaml**:
 * initial_dashboard_user -> username of the admin account on the dashboard 
@@ -79,28 +196,29 @@ ___
 * admin_keyring_file -> path to the file which contains the admin keyring 
 * osd_partitions -> partitions which the osds will be place on
 * osd_pg_per_pool -> Placement groups per pool
-* domain_name -> Domain name used to connect to the dashboard
 * certbot_email -> email given  to certbot
-* dashboard_ssl_port -> ssl port of the dashboard
-* dashboard_port -> http port for the dashboard
+
+**cephmgr.yaml**
+* dashboard_port -> non-ssl port of the dashboard
+* grafana_port -> port assigned to grafana
+* prometheus_port -> port assigned to prometheus
+* alertmanager_port -> port assigned to alertmanager
+* agama_image_size -> size of the rbd agama image
+* rsyslog_image_size -> size of the rbd rsyslog image
+* cloudflare_zone_edit_token -> cloudflare api token used to edit domain zone
 
 **restart_server.yaml**
-* hostnames -> hostnames given to the servers
-* ips -> ips of the servers
-* ilo_ip -> ilo ips of the servers
-* default_gateway -> default gateway on the servers' network
-* name_servers -> name servers used on the servers
+* ilo_ip -> hp ilo ips of the servers, used to contact the server through the ilo api
 * ubuntu_archive -> Ubuntu archive url
-* ilo_username -> username used to connect to the ilo
-* ilo_password -> password used to connect to the ilo
-* iso_download_url -> direct url to latest release of ubuntu 20.04
-* password_hash -> password hashes used to create accounts on servers
-* ilo_ip -> hp ilo ips of the servers, used to contact the server through the api
 * ngrok_auth_token -> encrypted ngrok auth token, used to authenticate ngrok on external server.
-It is required because the current external server is behind NAT.
 * ngrok_region -> ngrok region the tunnel operates in.
 * ngrok_hostname -> domain reserved through ngrok
-* apache_dir -> dir in which the files in the apache server will be stored in.
+* apache_dir -> dir in which the files in the apache server will be stored in
+* ilo_username -> username used to connect to the ilo
+* ilo_password -> password used to connect to the ilo
+* password_hash -> password hashes used to create accounts on servers
+* iso_download_url -> direct url to latest release of ubuntu 20.04
+* os_password -> password for the main users on the servers
 ___
 ### Encrypt and Decrypt
 Encrypt strings

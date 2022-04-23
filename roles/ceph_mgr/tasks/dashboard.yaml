@@ -20,8 +20,8 @@
 
   - name: set alertmanager api host to vrrp ip
     shell:
-      cmd: "ceph dashboard set-alertmanager-api-host 'http://{{ vrrp_ip }}:9093'"
-    when: "alertmanager_api_host.stdout != 'http://{{ vrrp_ip }}:9093'"
+      cmd: "ceph dashboard set-alertmanager-api-host 'http://{{ vrrp_ip }}:{{ alertmanager_port }}'"
+    when: "alertmanager_api_host.stdout != 'http://{{ vrrp_ip }}:{{ alertmanager_port }}'"
 
 - name: set prometheus api host to vrrp ip
   block:
@@ -33,8 +33,8 @@
 
     - name: set prometheus api host to vrrp ip
       shell:
-        cmd: "ceph dashboard set-prometheus-api-host 'http://{{ vrrp_ip }}:9095'"
-      when: 'prometheus_api_host.stdout != "http://{{ vrrp_ip }}:9095"'
+        cmd: "ceph dashboard set-prometheus-api-host 'http://{{ vrrp_ip }}:{{ prometheus_port }}'"
+      when: 'prometheus_api_host.stdout != "http://{{ vrrp_ip }}:{{ prometheus_port }}"'
 
 - name: disable dashboard redirect
   block:

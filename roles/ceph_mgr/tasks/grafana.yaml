@@ -39,15 +39,3 @@
     cmd: "ceph config-key set mgr/cephadm/grafana_key -i /etc/letsencrypt/live/{{ domain_name }}/privkey.pem"
   when: letsencrypt_key.stdout != current_key.stdout
   notify: redeploy dashboard
-
-- name: copy over grafana.ini
-  template:
-    src: grafana.ini
-    dest: /etc/ceph/grafana.ini
-  register: grafana_ini
-
-- name: set grafana.ini
-  template:
-    src: grafana.ini
-    dest: "/var/lib/ceph/{{ fsid }}/grafana.{{ hostvars[inventory_hostname]['ansible_hostname'] }}/etc/grafana/grafana.ini"
-  notify: restart grafana

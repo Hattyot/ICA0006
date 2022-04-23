@@ -15,14 +15,6 @@ s3
 s1
 s3
 
-[nginx]
-s1
-s3
-
-[influxdb]
-s1
-s3
-
 [cephadm]
 s1
 

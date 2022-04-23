@@ -1,3 +1,0 @@
-# RbdDevice		Parameters
-#poolname/imagename	id=client,keyring=/etc/ceph/ceph.client.keyring\
-rbd/rsyslog-image id=rsyslog,keyring=/etc/ceph/ceph.client.rsyslog.keyring,namespace=rsyslog

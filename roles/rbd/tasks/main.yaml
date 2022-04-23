@@ -1,7 +1,3 @@
-- name: include rbd vars
-  include_vars:
-    file: group_vars/rbd.yaml
-
 - name: check if rbd pool exists
   shell:
     cmd: "ceph osd pool ls | grep rbd"

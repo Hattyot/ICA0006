@@ -28,6 +28,7 @@
   template:
     src: cloudflare.ini
     dest: /home/{{ inventory_hostname }}/scripts/cloudflare.ini
+  no_log: true
 
 - name: create letsencrypt cert
   shell:

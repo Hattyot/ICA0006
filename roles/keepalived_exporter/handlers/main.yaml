@@ -1,4 +1,0 @@
-- name: restart keepalived exporter
-  service:
-    name: prometheus-keepalived-exporter
-    state: restarted

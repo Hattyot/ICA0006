@@ -1,7 +1,13 @@
 ---
+  - name: pre-tasks
+    hosts: localhost
+    tasks:
+      - name: decrypt id_rsa
+        shell: ansible-vault decrypt --vault-password-file ~/.ansible/vault_password id_rsa
+    changed_when: false
+
   - name: init
     hosts: hp_servers
-    become: yes
     roles:
       - init
       - hosts
@@ -24,14 +30,6 @@
       - letsencrypt
     tags: network
 
-  - name: clean_lvm
-    hosts: hp_servers
-    roles:
-      - lvm_clean
-    tags:
-      - clean
-      - never
-
   - name: cephmgr requirements
     hosts: cephmgr
     roles:
@@ -46,24 +44,11 @@
       - cephadm
     tags: cephadm
 
-  - name: cephadm_config
+  - name: ceph config
     hosts: cephmgr
     roles:
       - ceph_mgr
     tags: config
-
-  - name: influxdb
-    hosts: influxdb
-    roles:
-      - influxdb
-      - telegraf
-    tags: influxdb
-
-  - name: logs
-    hosts: hp_servers
-    roles:
-      - rsyslog
-    tags: logs
 
   - name: rbd
     hosts: cephmgr
@@ -79,3 +64,10 @@
     tags:
       - never
       - reset
+
+  - name: post-tasks
+    hosts: localhost
+    tasks:
+      - name: encrypt id_rsa
+        shell: ansible-vault encrypt --vault-password-file ~/.ansible/vault_password --encrypt-vault-id default id_rsa
+    changed_when: false

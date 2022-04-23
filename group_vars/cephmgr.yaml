@@ -1,7 +1,9 @@
-keepalived_metrics_port: 9165
-haproxy_port: 88
 dashboard_port: 8080
-influxdb_port: 8086
+grafana_port: 3000
+prometheus_port: 9095
+alertmanager_port: 9093
+agama_image_size: 5G
+rsyslog_image_size: 5G
 cloudflare_zone_edit_token: !vault |
           $ANSIBLE_VAULT;1.1;AES256
           33303133623265353137663538383938383931363733656234373064633936313338363465643330
