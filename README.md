@@ -43,9 +43,9 @@ sdd (136G)
 ```
 More detailed version of this can be viewed in [roles/full_reset/templates/auto-install-1.cfg](./roles/full_reset/templates/auto-install-1.cfg)
 ___
-### Operating System
+### Operating System & Kernel
 The operating system used under the ceph cluster is `Ubuntu 20.04`.\
-Ubuntu was chosen because it's easy to use and works well with ceph.
+The kernel version is `5.4.0-109-generic`
 ___
 ### Ceph Services
 Each server has:
@@ -66,6 +66,24 @@ The servers in the `cephmgr` group also have:
   * Port: 9095
 * Alertmanager (x1)
   * Port: 9093
+___
+### Pools
+Currently one pool is created for use by clients:
+* rbd:
+  * Size: 3
+  * Placement Groups: 512
+___
+### RBD images
+Each application which uses rados block devices to store data has its own image created
+Currently 2 images are created:
+* agama-image -> For the web application agama:
+  * Size: 5G
+  * Namespace: agama
+  * User: agama
+* rsyslog-image -> For storing rsyslog data:
+  * Size: 5G
+  * Namespace: rsyslog
+  * User: rsyslog
 ___
 ### Load Balancing
 Load balancing is handled by keepalived\
