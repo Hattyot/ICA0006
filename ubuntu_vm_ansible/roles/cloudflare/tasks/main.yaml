@@ -1,0 +1,11 @@
+- name: add vm ip as a record
+  cloudflare_dns:
+    zone: "{{ domain_name }}"
+    type: A
+    record: "vm"
+    value: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+    ttl: 60
+    api_token: "{{ cloudflare_zone_edit_token }}"
+    state: present
+  failed_when: false
+  no_log: true

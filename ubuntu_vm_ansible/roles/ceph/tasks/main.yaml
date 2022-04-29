@@ -1,0 +1,20 @@
+- name: ensure /etc/ceph dir exists
+  file:
+    path: /etc/ceph
+    state: directory
+
+- name: fetch cephadm script
+  get_url:
+    url: https://github.com/ceph/ceph/raw/pacific/src/cephadm/cephadm
+    dest: /etc/ceph/cephadm.sh
+    mode: '0700'
+
+- name: check if cephadm exists
+  stat:
+    path: "/usr/bin/ceph"
+  register: cephadm_file
+
+- name: install ceph
+  shell:
+    cmd: "/etc/ceph/cephadm.sh add-repo --release pacific && /etc/ceph/cephadm.sh install ceph ceph-common"
+  when: not cephadm_file.stat.exists

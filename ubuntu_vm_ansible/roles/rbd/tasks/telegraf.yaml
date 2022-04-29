@@ -1,0 +1,40 @@
+- name: include influxdb vars
+  include_vars:
+    file: group_vars/influxdb.yaml
+
+- name: check if telegraf is already mapped
+  shell: rbd showmapped | grep -oP 'telegraf-image.*\K(/dev/rbd\d+)' | head -n 1
+  changed_when: false
+  failed_when: false
+  register: telegraf_mapped
+
+- name: map telegraf image
+  shell:
+    cmd: rbd map --namespace telegraf telegraf-image -n client.telegraf --keyring=/etc/ceph/ceph.client.telegraf.keyring
+  when: telegraf_mapped.stdout == ""
+  register: telegraf_map
+
+- name: register telegraf-image devcie
+  set_fact:
+    rbd_device: "{% if telegraf_mapped.stdout == '' %}{{ telegraf_map.stdout }}{% else %}{{ telegraf_mapped.stdout }}{% endif %}"
+
+- name: make xfs filesystem on rbd device
+  filesystem:
+    fstype: xfs
+    dev: "{{ rbd_device }}"
+
+- name: create telegraf database
+  influxdb_database:
+    hostname: localhost
+    database_name: telegraf
+    username: "{{ influxdb_admin_user }}"
+    password: "{{ influxdb_admin_password }}"
+
+- name: mount rbd device to /opt/influxdb/data/data/telegraf/
+  mount:
+    path: /opt/influxdb/data/data/telegraf/
+    src: /dev/rbd/rbd/telegraf/telegraf-image
+    fstype: xfs
+    opts: _netdev
+    state: mounted
+  notify: restart influxdb

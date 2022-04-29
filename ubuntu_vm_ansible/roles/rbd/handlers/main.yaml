@@ -1,0 +1,9 @@
+- name: restart mysqld
+  systemd:
+    name: mysql
+    state: restarted
+
+- name: restart influxdb
+  docker_compose:
+    project_src: /opt/influxdb/
+    restarted: yes

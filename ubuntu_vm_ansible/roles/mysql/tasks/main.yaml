@@ -1,0 +1,40 @@
+- name: ensure /var/run/mysqld dir exists
+  file:
+    path: /var/run/mysqld
+    state: directory
+
+- name: Install mysql-server and python3-pymysql
+  apt:
+    name:
+      - mysql-server
+      - python3-pymysql
+    state: latest
+
+- name: override conf
+  template:
+    src: mysql.cnf
+    dest: /etc/mysql/conf.d/override.cnf
+  notify: Restart mysql on config change
+
+- name: copy over my.cnf for root user
+  template:
+    src: my.cnf
+    dest: /root/.my.cnf
+  no_log: true
+
+- name: make mysql owner of its folders
+  file:
+    path: /var/lib/mysql
+    owner: mysql
+    group: mysql
+    state: directory
+    recurse: yes
+  loop: ["/var/lib/mysql", "/var/lib/mysql-files"]
+
+- name: Start and enable mysql service
+  systemd:
+    name: mysql
+    state: started
+    enabled: yes
+
+- import_tasks: agama.yaml

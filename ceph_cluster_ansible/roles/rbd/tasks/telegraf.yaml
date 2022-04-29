@@ -1,0 +1,42 @@
+- name: check if telegraf namespace exists
+  shell: "rbd namespace ls | grep telegraf"
+  register: telegraf_namespace
+  changed_when: false
+  failed_when: false
+
+- name: create telegraf namespace
+  shell:
+    cmd: rbd namespace create --namespace telegraf
+  when: telegraf_namespace.stdout == ""
+
+- name: check if telegraf user exists
+  stat:
+    path: "/etc/ceph/ceph.client.telegraf.keyring"
+  register: telegraf_keyring
+  changed_when: false
+
+- name: create user for telegraf namespace
+  shell:
+    cmd: ceph auth get-or-create client.telegraf mon 'profile rbd' osd 'profile rbd pool=rbd namespace=telegraf' -o /etc/ceph/ceph.client.telegraf.keyring
+  when: not telegraf_keyring.stat.exists
+
+- name: check if telegraf-image exists
+  shell: "rbd --namespace telegraf ls"
+  register: telegraf_image
+  changed_when: false
+
+- name: create telegraf rbd image
+  shell:
+    cmd: "rbd create --namespace telegraf telegraf-image --size {{ telegraf_image_size }}"
+  when: telegraf_image.stdout == ""
+
+- name: get current telegraf-image size
+  shell: rbd --image telegraf-image --namespace telegraf info | grep -oP '\tsize\s+\K(\d+\s+\w)' | sed 's/ //g'
+  register: current_telegraf_image_size
+  changed_when: false
+  failed_when: false
+
+- name: resize telegraf-image
+  shell:
+    cmd: "rbd resize --image telegraf-image --namespace telegraf --size {{ telegraf_image_size }} --allow-shrink"
+  when: "current_telegraf_image_size.stdout != '{{ telegraf_image_size }}'"

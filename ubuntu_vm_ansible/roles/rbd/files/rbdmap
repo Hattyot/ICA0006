@@ -1,0 +1,2 @@
+rbd/agama-image    id=agama,keyring=/etc/ceph/ceph.client.agama.keyring,namespace=agama
+rbd/telegraf-image    id=telegraf,keyring=/etc/ceph/ceph.client.telegraf.keyring,namespace=telegraf

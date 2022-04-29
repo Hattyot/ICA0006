@@ -1,0 +1,32 @@
+- name: include influxdb vars
+  include_vars:
+    file: group_vars/influxdb.yaml
+
+- name: create influxdb network
+  docker_network:
+    name: "influxdb"
+    state: present
+
+- name: ensure /opt/influxdb/data dir exists
+  file:
+    path: /opt/influxdb/data
+    state: directory
+
+- name: install influxdb python module
+  pip:
+    name: influxdb
+
+- name: copy influxdb files
+  template:
+    src: "{{ item[0] }}"
+    dest: "{{ item[1] }}"
+  loop:
+    - ['telegraf.conf', '/opt/influxdb/telegraf.conf']
+    - ['influxdb.conf', '/opt/influxdb/influxdb.conf']
+    - ['docker-compose.yaml', '/opt/influxdb/docker-compose.yaml']
+  notify: restart influxdb and telegraf
+
+- name: deploy influxdb and telegraf
+  docker_compose:
+    project_src: /opt/influxdb/
+    state: present

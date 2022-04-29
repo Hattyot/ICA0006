@@ -1,0 +1,4 @@
+- name: Restart mysql on config change
+  ansible.builtin.service:
+    name: mysql
+    state: restarted

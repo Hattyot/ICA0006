@@ -1,0 +1,4 @@
+- name: reload journalctl
+  systemd:
+    name: systemd-journald
+    state: restarted

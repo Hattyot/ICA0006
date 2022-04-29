@@ -1,0 +1,23 @@
+- name: Update the /etc/hosts with username
+  lineinfile:
+    path: "/etc/hosts"
+    regexp: ".*\t{{ hostvars[item]['ansible_hostname'] }}\t{{ item }}$"
+    line: "{{ hostvars[item]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}\t{{ hostvars[item]['ansible_hostname']}}\t{{ item }}"
+    state: present
+  when: ansible_hostname != "{{ item }}" or ansible_hostname == "{{ item }}"
+  with_items: "{{groups['hp_servers']}}"
+
+- name: Add domain_name to hosts file
+  lineinfile:
+    path: "/etc/hosts"
+    regexp: ".*\t{{ domain_name }}\twww.{{ domain_name }}$"
+    line: "127.0.0.1\t{{ domain_name }}\twww.{{ domain_name }}"
+    state: present
+  when: "inventory_hostname in groups['cephmgr']"
+
+- name: Add vm to hosts file
+  lineinfile:
+    path: "/etc/hosts"
+    regexp: ".*\tvm"
+    line: "{{ ips['vm'] }}\tvm"
+    state: present

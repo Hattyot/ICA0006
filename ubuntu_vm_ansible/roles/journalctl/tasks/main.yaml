@@ -1,0 +1,5 @@
+- name: copy over journalctl.conf
+  copy:
+    src: journalctl.conf
+    dest: /etc/systemd/journald.conf
+  notify: reload journalctl

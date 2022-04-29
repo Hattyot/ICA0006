@@ -1,0 +1,4 @@
+- name: restart agama
+  docker_compose:
+    project_src: /opt/agama/
+    restarted: yes

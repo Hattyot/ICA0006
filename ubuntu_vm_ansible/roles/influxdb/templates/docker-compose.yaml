@@ -1,0 +1,38 @@
+version: '3.6'
+services:
+  influxdb:
+    image: influxdb:1.8.10
+    restart: always
+    ports:
+      - "8083:8083"
+      - "8086:8086"
+      - "8090:8090"
+    environment:
+      - INFLUXDB_DB={{ influx_db }}
+      - INFLUXDB_ADMIN_USER={{ influxdb_admin_user }}
+      - INFLUXDB_ADMIN_PASSWORD={{ influxdb_admin_password }}
+    volumes:
+      - /opt/influxdb/data/:/var/lib/influxdb/
+      - /opt/influxdb/influxdb.conf:/etc/influxdb/influxdb.conf:ro
+      - /opt/influxdb/influxdb-init.iql:/docker-entrypoint-initdb.d/influxdb-init.iql:ro
+
+  telegraf:
+    image: telegraf:latest
+    restart: always
+    ports:
+      - "{{ telegraf_port }}:{{ telegraf_port }}/udp"
+    volumes:
+    - /opt/influxdb/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+    depends_on:
+      influxdb:
+        condition: service_completed_successfully
+    links:
+      - influxdb
+
+volumes:
+  influxdb_data: {}
+
+networks:
+  default:
+    external:
+      name: influxdb

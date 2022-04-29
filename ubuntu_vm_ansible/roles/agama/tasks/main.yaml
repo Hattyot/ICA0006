@@ -1,0 +1,29 @@
+- name: include agama vars
+  include_vars:
+    file: group_vars/agama.yaml
+    name: agama
+
+- name: ensure /opt/agama dir exists
+  file:
+    path: /opt/agama
+    state: directory
+
+- name: register mysql connection uri
+  set_fact:
+    mysql_con: "mysql+pymysql://{{ agama.mysql_user }}:{{ agama.mysql_password }}@{{ mysql_host }}:{{ mysql_port }}/{{ agama.mysql_database }}"
+
+- name: copy over Dockerfile
+  template:
+    src: Dockerfile
+    dest: /opt/agama/Dockerfile
+
+- name: copy over docker-compose file
+  template:
+    src: docker-compose.yaml
+    dest: /opt/agama/docker-compose.yaml
+
+- name: deploy agama
+  docker_compose:
+    project_src: /opt/agama
+    state: present
+    build: yes

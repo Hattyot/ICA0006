@@ -1,0 +1,7 @@
+- name: add hp servers to hosts file
+  lineinfile:
+    path: "/etc/hosts"
+    regexp: ".*{{ item.value }}\t{{ item.key }}$"
+    line: "{{ item.value }}\t{{ item.key }}"
+    state: present
+  with_items: "{{ hp_server_ips | dict2items }}"

@@ -1,0 +1,6 @@
+vm ansible_host=192.168.180.42
+
+
+[all:vars]
+ansible_ssh_private_key_file=../id_rsa
+ansible_user=root

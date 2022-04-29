@@ -1,0 +1,39 @@
+- name: ensure .ssh dir exists
+  file:
+    path: "/home/{{ inventory_hostname }}/.ssh/"
+    state: directory
+
+- name: generate rsa ssh key
+  openssh_keypair:
+    owner: "{{ inventory_hostname }}"
+    path: "/home/{{ inventory_hostname }}/.ssh/id_rsa"
+    type: rsa
+    size: 4096
+    state: present
+    force: no
+  register: id_rsa
+
+- name: register public key
+  set_fact:
+    public_key: "{{ id_rsa.public_key }}"
+    cacheable: yes
+
+- name: add local ssh key to authorized keys
+  authorized_key:
+    user: "{{ inventory_hostname }}"
+    state: present
+    key: "{{ item }}"
+  loop: "{{ public_keys }}"
+
+- name: add local ssh key to root authorized keys
+  authorized_key:
+    user: root
+    state: present
+    key: "{{ item }}"
+  loop: "{{ public_keys }}"
+
+- name: overwrite sshd_config
+  copy:
+    src: sshd_config
+    dest: /etc/ssh/sshd_config
+  notify: restart sshd

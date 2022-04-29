@@ -1,0 +1,36 @@
+- name: check if agama is already mapped
+  shell: rbd showmapped | grep -oP 'agama-image.*\K(/dev/rbd\d+)' | head -n 1
+  changed_when: false
+  failed_when: false
+  register: agama_mapped
+
+- name: map agama image
+  shell:
+    cmd: rbd map --namespace agama agama-image -n client.agama --keyring=/etc/ceph/ceph.client.agama.keyring
+  when: agama_mapped.stdout == ""
+  register: agama_map
+  notify: restart mysqld
+
+- name: register agama-image devcie
+  set_fact:
+    rbd_device: "{% if agama_mapped.stdout == '' %}{{ agama_map.stdout }}{% else %}{{ agama_mapped.stdout }}{% endif %}"
+
+- name: make xfs filesystem on rbd device
+  filesystem:
+    fstype: xfs
+    dev: "{{ rbd_device }}"
+
+- name: create MySQL agama database
+  become: yes
+  mysql_db:
+    name: "{{ agama.mysql_database }}"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: mount rbd device to /var/lib/mysql/agama
+  mount:
+    path: /var/lib/mysql/agama
+    src: /dev/rbd/rbd/agama/agama-image
+    fstype: xfs
+    opts: _netdev
+    state: mounted
+  notify: restart mysqld

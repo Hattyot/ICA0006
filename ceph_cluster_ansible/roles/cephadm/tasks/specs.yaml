@@ -1,0 +1,113 @@
+- name: apply host spec
+  block:
+  - name: copy over host spec file
+    template:
+      src: host_spec.yaml
+      dest: /etc/ceph/host_spec.yaml
+    register: host_spec
+
+  - name: check if hosts have been added
+    shell:
+      cmd: "ceph orch host ls | wc -l"
+    register: host_num
+    changed_when: false
+
+  - name: apply host spec
+    shell:
+      cmd: "ceph orch apply -i /etc/ceph/host_spec.yaml"
+    when: host_num.stdout != (groups['hp_servers'].__len__() + 1).__str__() or host_spec.changed
+
+- name: apply osd spec
+  block:
+  - name: copy over osd spec file
+    template:
+      src: osd_spec.yaml
+      dest: /etc/ceph/osd_spec.yaml
+    register: osd_spec
+
+  - name: check if osds have been created
+    shell:
+      cmd: ceph osd stat | grep -oP "^(\d+)"
+    register: osd_num
+    changed_when: false
+
+  - name: apply osd spec
+    shell:
+      cmd: "ceph orch apply -i /etc/ceph/osd_spec.yaml"
+    when: osd_num.stdout != (osd_partitions.__len__() * groups['hp_servers'].__len__()).__str__() or osd_spec.changed
+
+- name: apply monitor spec
+  block:
+  - name: copy over monitor spec file
+    template:
+      src: monitor_spec.yaml
+      dest: /etc/ceph/monitor_spec.yaml
+    register: monitor_spec
+
+  - name: check if monitors have been created
+    shell:
+      cmd: sudo ceph orch ls --service_type mon | awk "{print $2}" | grep -oP "\K(\d+)(?=/\d+)"
+    register: mon_num
+    changed_when: false
+
+  - name: apply monitor spec
+    shell:
+      cmd: "ceph orch apply -i /etc/ceph/monitor_spec.yaml"
+    when: mon_num.stdout != (groups['hp_servers'].__len__()).__str__() or monitor_spec.changed
+
+- name: apply manager spec
+  block:
+  - name: copy over manager spec file
+    template:
+      src: manager_spec.yaml
+      dest: /etc/ceph/manager_spec.yaml
+    register: manager_spec
+
+  - name: check if managers have been created
+    shell:
+      cmd: sudo ceph orch ls --service_type mgr | awk "{print $2}" | grep -oP "\K(\d+)(?=/\d+)"
+    register: mgr_num
+    changed_when: false
+
+  - name: apply manager spec
+    shell:
+      cmd: "ceph orch apply -i /etc/ceph/manager_spec.yaml"
+    when: mgr_num.stdout != (groups['hp_servers'].__len__() - 1).__str__() or manager_spec.changed
+
+- name: apply crash spec
+  block:
+  - name: copy over crash spec file
+    template:
+      src: crash_spec.yaml
+      dest: /etc/ceph/crash_spec.yaml
+    register: crash_spec
+
+  - name: check if crashs have been created
+    shell:
+      cmd: sudo ceph orch ls --service_type crash | awk "{print $2}" | grep -oP "\K(\d+)(?=/\d+)"
+    register: crash_num
+    changed_when: false
+
+  - name: apply crash spec
+    shell:
+      cmd: "ceph orch apply -i /etc/ceph/crash_spec.yaml"
+    when: crash_num.stdout != (groups['hp_servers'].__len__()).__str__() or crash_spec.changed
+
+- name: apply node-exporter spec
+  block:
+  - name: copy over node-exporter spec file
+    template:
+      src: node-exporter_spec.yaml
+      dest: /etc/ceph/node-exporter_spec.yaml
+    register: node_exporter_spec
+
+  - name: check if node-exporters have been created
+    shell:
+      cmd: sudo ceph orch ls --service_type node-exporter | awk "{print $2}" | grep -oP "\K(\d+)(?=/\d+)"
+    register: node_exporter_num
+    changed_when: false
+
+  - name: apply node-exporter spec
+    shell:
+      cmd: "ceph orch apply -i /etc/ceph/node-exporter_spec.yaml"
+    when: node_exporter_num.stdout != (groups['hp_servers'].__len__()).__str__() or node_exporter_spec.changed

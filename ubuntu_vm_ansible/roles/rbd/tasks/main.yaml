@@ -1,0 +1,7 @@
+- import_tasks: agama.yaml
+- import_tasks: telegraf.yaml
+
+- name: copy over rbdmap
+  copy:
+    src: rbdmap
+    dest: /etc/ceph/rbdmap

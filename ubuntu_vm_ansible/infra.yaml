@@ -1,0 +1,58 @@
+---
+  - name: pre-tasks
+    hosts: localhost
+    tasks:
+      - name: decrypt id_rsa
+        shell: ansible-vault decrypt --vault-password-file ~/.ansible/vault_password id_rsa
+        changed_when: false
+    tags:
+      - always
+
+  - name: init
+    hosts: vm
+    roles:
+      - init
+      - hosts
+      - journalctl
+      - ssh
+    tags: init
+
+  - name: requirements
+    hosts: vm
+    roles:
+      - python
+      - docker
+      - ceph
+    tags: requirements
+
+  - name: network
+    hosts: vm
+    roles:
+      - letsencrypt
+      - cloudflare
+      - nginx_docker
+    tags: network
+
+  - name: storage
+    hosts: vm
+    roles:
+      - mysql
+      - influxdb
+      - rbd
+    tags: storage
+
+  - name: services
+    hosts: vm
+    roles:
+      - agama
+      - rsyslog
+    tags: services
+
+  - name: post-tasks
+    hosts: localhost
+    tasks:
+      - name: encrypt id_rsa
+        shell: ansible-vault encrypt --vault-password-file ~/.ansible/vault_password --encrypt-vault-id default id_rsa
+        changed_when: false
+    tags:
+      - always

@@ -1,0 +1,24 @@
+s1 ansible_host=192.168.161.85
+s2 ansible_host=192.168.161.86
+s3 ansible_host=192.168.161.87
+vm ansible_host=192.168.180.42
+srvr ansible_host=192.168.1.76 ansible_ssh_private_key_file=~/.ssh/id_rsa
+
+[restart_server]
+srvr
+
+[hp_servers]
+s1
+s2
+s3
+
+[cephmgr]
+s1
+s3
+
+[cephadm]
+s1
+
+[all:vars]
+ansible_ssh_private_key_file=../id_rsa
+ansible_user=root

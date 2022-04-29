@@ -1,0 +1,4 @@
+- name: restart influxdb and telegraf
+  docker_compose:
+    project_src: /opt/influxdb/
+    restarted: yes

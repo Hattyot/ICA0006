@@ -1,0 +1,22 @@
+- name: install docker.io
+  apt:
+    name: docker.io
+    state: present
+
+- name: install python docker and docker-compose
+  pip:
+    name:
+      - docker
+      - docker-compose
+
+- name: copy over daemon.json
+  copy:
+    src: daemon.json
+    dest: /etc/docker/daemon.json
+  notify: restart docker
+
+- name: start enable docker
+  systemd:
+    name: docker
+    state: started
+    enabled: yes

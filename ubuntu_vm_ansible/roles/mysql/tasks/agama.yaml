@@ -1,0 +1,13 @@
+- name: include agama vars
+  include_vars:
+    file: group_vars/agama.yaml
+    name: agama
+
+- name: create MySQL agama user
+  mysql_user:
+    name: "{{ agama.mysql_user }}"
+    password: "{{ agama.mysql_password }}"
+    host: "%"
+    priv: "{{ agama.mysql_database }}.*:ALL"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+  no_log: true

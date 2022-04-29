@@ -1,0 +1,51 @@
+- name: install letsencrypt
+  apt:
+    name: letsencrypt
+
+- name: Check that the cert doesnt exist
+  stat:
+    path: "/etc/letsencrypt/live/vm.{{ domain_name }}/privkey.pem"
+  register: cert
+
+- name: enusre scripts dir
+  file:
+    path: /home/{{ inventory_hostname }}/scripts
+    state: directory
+
+- name: copy over scripts
+  template:
+    src: certbot.sh
+    dest: /home/{{ inventory_hostname }}/scripts/certbot.sh
+    mode: "+x"
+
+- name: certbot plugins
+  pip:
+    name:
+      - certbot-dns-cloudflare
+      - cffi
+
+- name: copy over cloudflare.ini
+  template:
+    src: cloudflare.ini
+    dest: /home/{{ inventory_hostname }}/scripts/cloudflare.ini
+    mode: "600"
+  no_log: true
+
+- name: create letsencrypt cert
+  shell:
+    cmd: /home/{{ inventory_hostname }}/scripts/certbot.sh
+  when: not cert.stat.exists
+
+- name: check if chain and key combination exists
+  stat:
+    path: /etc/ssl/vm.{{ domain_name }}/vm.{{ domain_name }}.pem
+  register: combination
+
+- name: ensure /etc/ssl/ dir
+  file:
+    path: "/etc/ssl/vm.{{ domain_name }}"
+    state: directory
+
+- name: combine fullchain and key
+  shell: "cat /etc/letsencrypt/live/vm.{{ domain_name }}/fullchain.pem /etc/letsencrypt/live/vm.{{ domain_name }}/privkey.pem > /etc/ssl/vm.{{ domain_name }}/vm.{{ domain_name }}.pem"
+  when: not combination.stat.exists
