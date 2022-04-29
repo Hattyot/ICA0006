@@ -1,5 +1,11 @@
 This playbook installs all the services that will use the ceph cluster
 ___
+# Server
+___
+### Operating System & Kernel
+The operating system used under the vm is `Ubuntu 20.04`.\
+The kernel version is `5.4.0-109-generic`
+___
 # Services
 ___
 ## Frontend Services
