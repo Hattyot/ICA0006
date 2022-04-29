@@ -1,0 +1,15 @@
+version: '3.6'
+
+services:
+  grafana:
+    image: grafana/grafana:8.3.3
+    container_name: grafana
+    ports:
+      - '{{ grafana_port }}:3000'
+    restart: always
+    volumes:
+      - /opt/grafana:/etc/grafana
+    logging:
+      driver: "syslog"
+      options:
+        tag: docker/{{'{{.Name}}'}}

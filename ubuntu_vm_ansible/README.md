@@ -18,12 +18,17 @@ ___
 Telegraf is a server agent which collects metrics data, in our case syslogs.\
 Port: 6514
 ___
+### Grafana
+Grafana is a monitoring tool, in our case used to easily visualise and manage logs.\
+Port: 3000
+___
 ### Nginx
 Nginx directs traffic towards the vm's services. \
 Paths:
 * `/` -> agama
 * `/influxdb` -> influxdb
 * `/telegraf` -> telegraf
+* `/grafana` -> grafana
 ___
 ## Backend Services
 ___
@@ -119,6 +124,14 @@ ___
 * rsyslog -> Installs and configures rsyslog
   * Templates:
     * rsyslog-telegraf.conf -> Configures rsyslog to send all logs to telegraf
+* grafana -> Installs and configures grafana
+  * Files:
+    * syslog.json -> The syslog dashboard
+  * Templates:
+    * docker-compose.yaml -> Docker-compose file used to launch grafana
+    * grafana.ini.j2 -> Grafana config file
+    * main_datasource.yaml -> Datasource settings, defines InfluxDB as a source
+    * main_dashboard.yaml -> Dashboard settings
 ___
 ### Group vars
 **all.yaml**:
@@ -131,6 +144,7 @@ ___
 * mysql_port -> port which can be used to access mysql
 * influxdb_port -> port which can be used to access influxdb
 * telegraf_port -> port which can be used to access telegraf
+* grafana_port -> port which can be used to access grafana
 * mysql_host -> ip of the mysql host machine
 * mysql_root_password -> root password used to create mysql root user
 
@@ -143,6 +157,9 @@ ___
 * influx_db -> influxdb db
 * influxdb_admin_user -> name of the influxdb admin user
 * influxdb_admin_password -> password of the influxdb admin user
+
+**grafana.yaml**
+* grafana_password -> password used to login to grafana
 ___
 ### Encrypt and Decrypt
 Encrypt strings
