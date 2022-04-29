@@ -46,6 +46,7 @@
     roles:
       - agama
       - rsyslog
+      - grafana
     tags: services
 
   - name: post-tasks

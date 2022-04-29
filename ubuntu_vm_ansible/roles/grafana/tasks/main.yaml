@@ -1,0 +1,48 @@
+- name: include grafana vars
+  include_vars:
+    file: group_vars/grafana.yaml
+
+- name: Create grafana directories
+  file:
+    name: "/opt/grafana/provisioning/{{ item }}"
+    state: directory
+    recurse: yes
+  loop:
+    - dashboards
+    - datasources
+
+- name: Grafana configuration
+  template:
+    src: grafana.ini.j2
+    dest: /opt/grafana/grafana.ini
+  no_log: yes
+  notify: Restart grafana docker container
+
+- name: Add default dashboard config
+  template:
+    src: ../templates/main_dashboard.yaml
+    dest: /opt/grafana/provisioning/dashboards/default.yaml
+  notify: Restart grafana docker container
+
+- name: Add syslog dashboard json file
+  copy:
+    src: ../files/syslog.json
+    dest: /opt/grafana/provisioning/dashboards/
+  notify: Restart grafana docker container
+
+- name: Add datasource config
+  template:
+    src: ../templates/main_datasource.yaml
+    dest: /opt/grafana/provisioning/datasources/default.yaml
+  notify: Restart grafana docker container
+  
+- name: copy over docker-compose file
+  template:
+    src: ../templates/docker-compose.yaml
+    dest: /opt/grafana/docker-compose.yaml
+  notify: Restart grafana docker container
+  
+- name: deploy grafana container
+  docker_compose:
+    project_src: /opt/grafana
+    state: present
