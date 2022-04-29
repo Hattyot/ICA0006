@@ -15,6 +15,10 @@ services:
       - /opt/influxdb/data/:/var/lib/influxdb/
       - /opt/influxdb/influxdb.conf:/etc/influxdb/influxdb.conf:ro
       - /opt/influxdb/influxdb-init.iql:/docker-entrypoint-initdb.d/influxdb-init.iql:ro
+    logging:
+      driver: "journald"
+      options:
+        tag: "docker/{{.Name}}"
 
   telegraf:
     image: telegraf:latest
@@ -28,6 +32,11 @@ services:
         condition: service_completed_successfully
     links:
       - influxdb
+    logging:
+      driver: "journald"
+      options:
+        tag: "docker/{{.Name}}"
+
 
 volumes:
   influxdb_data: {}

@@ -10,6 +10,6 @@ services:
       - ./default.conf.template:/etc/nginx/templates/default.conf.template:ro
       - /etc/letsencrypt/:/etc/letsencrypt/:ro
     logging:
-      driver: "syslog"
+      driver: "journald"
       options:
         tag: "docker/{{.Name}}"
