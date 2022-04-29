@@ -39,7 +39,7 @@ Databases:
 ___
 ### Influxdb
 Influxdb is configured to run in the same way as mysql, each database has its own folder
-Ports: 8092, 8125, 8094 
+Ports: 8086
 Databases:
 * telegraf
   * `rbd image` -> telegraf-image
