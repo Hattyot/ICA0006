@@ -1,12 +1,12 @@
 ---
-#  - name: pre-tasks
-#    hosts: localhost
-#    tasks:
-#      - name: decrypt id_rsa
-#        shell: ansible-vault decrypt --vault-password-file ~/.ansible/vault_password ../id_rsa
-#        changed_when: false
-#    tags:
-#      - always
+  - name: pre-tasks
+    hosts: localhost
+    tasks:
+      - name: decrypt id_rsa
+        shell: ansible-vault decrypt --vault-password-file ~/.ansible/vault_password ../id_rsa
+        changed_when: false
+    tags:
+      - always
 
   - name: init
     hosts: hp_servers
@@ -52,11 +52,12 @@
       - ceph_mgr
     tags: config
 
-  - name: rbd
+  - name: storage
     hosts: cephadm
     roles:
       - rbd
-    tags: rbd
+      - cephfs
+    tags: storage
 
   - name: logs
     hosts: hp_servers
@@ -73,11 +74,11 @@
       - never
       - reset
 
-#  - name: post-tasks
-#    hosts: localhost
-#    tasks:
-#      - name: encrypt id_rsa
-#        shell: ansible-vault encrypt --vault-password-file ~/.ansible/vault_password --encrypt-vault-id default ../id_rsa
-#        changed_when: false
-#    tags:
-#      - always
+  - name: post-tasks
+    hosts: localhost
+    tasks:
+      - name: encrypt id_rsa
+        shell: ansible-vault encrypt --vault-password-file ~/.ansible/vault_password --encrypt-vault-id default ../id_rsa
+        changed_when: false
+    tags:
+      - always

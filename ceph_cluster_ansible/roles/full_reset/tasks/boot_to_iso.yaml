@@ -5,17 +5,17 @@
   delegate_to: 127.0.0.1
 
 #- name: boot other hosts to new iso
-#  become_user: ssaart
-#  shell:
-#    cmd: "python hpilo_script.py \
-#          --host {{ ilo_ip[item] }} \
-#          --iso-host http://{{ ngrok_hostname }} \
-#          --iso-name ubuntu-auto-{{ item[-1] }}.iso \
-#          --username {{ ilo_username }} \
-#          --password {{ ilo_password }}"
-#  delegate_to: 127.0.0.1
-#  no_log: true
-#  loop:
-#    - "s1"
-##    - "s2"
-##    - "s3"
+  become_user: ssaart
+  shell:
+    cmd: "python hpilo_script.py \
+          --host {{ ilo_ip[item] }} \
+          --iso-host http://{{ ngrok_hostname }} \
+          --iso-name ubuntu-auto-{{ item[-1] }}.iso \
+          --username {{ ilo_username }} \
+          --password {{ ilo_password }}"
+  delegate_to: 127.0.0.1
+  no_log: true
+  loop:
+    - "s1"
+    - "s2"
+    - "s3"

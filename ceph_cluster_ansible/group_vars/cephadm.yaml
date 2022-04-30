@@ -9,6 +9,6 @@ initial_dashboard_password: !vault |
 fsid: 7eec669e-b41a-11ec-9909-e160ce8bfa0b
 admin_keyring_file: /etc/ceph/ceph.client.admin.keyring
 osd_partitions: [vg0/lv0, vg1/lv1, vg2/lv2, vg3/lv3]
-osd_pg_per_pool: 512
+osd_pg_per_pool: 256
 
 certbot_email: ssaart@ttu.ee

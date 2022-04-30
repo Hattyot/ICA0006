@@ -1,5 +1,5 @@
 - name: copy over journalctl.conf
   copy:
     src: journalctl.conf
-    dest: /etc/systemd/journald.conf
+    dest: /etc/systemd/syslog.conf
   notify: reload journalctl

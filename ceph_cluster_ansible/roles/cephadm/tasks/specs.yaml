@@ -111,3 +111,22 @@
     shell:
       cmd: "ceph orch apply -i /etc/ceph/node-exporter_spec.yaml"
     when: node_exporter_num.stdout != (groups['hp_servers'].__len__()).__str__() or node_exporter_spec.changed
+
+- name: apply metadata server spec
+  block:
+  - name: copy over mds spec file
+    template:
+      src: mds_spec.yaml
+      dest: /etc/ceph/mds_spec.yaml
+    register: mds_spec
+
+  - name: check if mds-s have been created
+    shell:
+      cmd: sudo ceph orch ls --service_type mon | awk "{print $2}" | grep -oP "\K(\d+)(?=/\d+)"
+    register: mds_num
+    changed_when: false
+
+  - name: apply mds spec
+    shell:
+      cmd: "ceph orch apply -i /etc/ceph/mds_spec.yaml"
+    when: mds_num.stdout != (groups['hp_servers'].__len__()).__str__() or mds_spec.changed

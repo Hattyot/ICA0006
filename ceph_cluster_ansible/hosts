@@ -2,10 +2,9 @@ s1 ansible_host=192.168.161.85
 s2 ansible_host=192.168.161.86
 s3 ansible_host=192.168.161.87
 vm ansible_host=192.168.180.42
-srvr ansible_host=192.168.1.76 ansible_ssh_private_key_file=~/.ssh/id_rsa
 
 [restart_server]
-srvr
+vm
 
 [hp_servers]
 s1

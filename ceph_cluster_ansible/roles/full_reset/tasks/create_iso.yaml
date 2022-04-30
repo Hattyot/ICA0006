@@ -1,3 +1,9 @@
+- name: install requirements
+  apt:
+    name:
+      - xorriso
+      - isolinux
+
 - name: copy over auto-install-1.cfg to apache
   template:
     src: "auto-install-1.cfg"

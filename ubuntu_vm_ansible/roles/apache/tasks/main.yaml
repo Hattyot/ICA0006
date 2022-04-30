@@ -1,0 +1,37 @@
+- name: install apache2
+  apt:
+    name: apache2
+
+- name: enable needed modules
+  shell:
+    cmd: "a2enmod {{ item }}"
+  loop:
+    - proxy
+    - proxy_http
+    - proxy_balancer
+    - lbmethod_byrequests
+  changed_when: false
+
+- name: copy over apache.conf
+  template:
+    src: apache.conf
+    dest: /etc/apache2/apache2.conf
+  notify: restart apache
+
+- name: copy over 000-default.conf
+  template:
+    src: 000-default.conf
+    dest: /etc/apache2/sites-available/000-default.conf
+  notify: restart apache
+
+- name: copy over ports config
+  template:
+    src: ports.conf
+    dest: /etc/apache2/ports.conf
+  notify: restart apache
+
+- name: start enable apache2
+  service:
+    name: apache2
+    state: started
+    enabled: yes

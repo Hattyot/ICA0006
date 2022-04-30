@@ -1,6 +1,6 @@
 {
-  "log-driver": "journald",
+  "log-driver": "syslog",
   "log-opts": {
-    "tag" : "docker/{{.Name}}"
+    "tag" : "docker_{{.Name}}"
   }
 }

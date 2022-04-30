@@ -1,4 +1,2 @@
-- import_tasks: fileserver.yaml
-- import_tasks: ngrok.yaml
 - import_tasks: create_iso.yaml
-- import_tasks: boot_to_iso.yaml
+#- import_tasks: boot_to_iso.yaml

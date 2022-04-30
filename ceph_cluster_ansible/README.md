@@ -48,6 +48,125 @@ The kernel version is `5.4.0-109-generic`
 ___
 # Ceph Design
 ___
+### UML Diagram
+```
+                             ┌───────────┐                             ┌───────────┐
+                             │Modules    │                             │Modules    │
+                             ├───────────┤                             ├───────────┤
+                             │balancer   │                             │balancer   │
+                             │cephadm    │           ┌────┐            │cephadm    │
+           ┌────────────────►│crash      │           │HTTP│            │crash      │◄────────────────┐
+           │                 │dashboard  │           └──┬─┘            │dashboard  │                 │
+  ┌────────┴┐                │devicehealt│              │              │devicehealt│                ┌┴────────┐
+  │         ├───────────┐    │iostat     │              │              │iostat     │   ┌────────────┤         │
+┌─┤ Manager │           │    └───────────┘              │              └───────────┘   │            │ Manager ├─┐
+│ │         │◄────────┐ │                               │                              │ ┌─────────►│         │ │
+│ └─────────┘         │ │    ┌──────────┐               ▼               ┌──────────┐   │ │          └─────────┘ │
+│                     │ │    │Dashboard │   ┌───────────────────────┐   │Dashboard │   │ │                      │
+│ ┌──────────┐        │ │    ├──────────┤   │Keepalived             │   ├──────────┤   │ │         ┌──────────┐ │
+│ │Prometheus│        │ └───►│Port: 8080│◄┐ ├───────────────────────┤ ┌►│Port: 8080│◄──┘ │         │Prometheus│ │
+│ ├──────────┤        │      └──────────┘ │ │VRRP IP: 192.168.161.88│ │ └──────────┘     │         ├──────────┤ │
+│ │Port: 9095│◄─────┐ │                   │ └───────────┬───────────┘ │                  │ ┌──────►│Port: 9095│ │
+│ └──────────┘      │ │      ┌──────────┐ │             │             │ ┌──────────┐     │ │       └──────────┘ │
+│                   │ │      │Grafana   │ │             │             │ │Grafana   │     │ │                    │
+│ ┌────────────┐    │ │      ├──────────┤ │    ┌────────┴────────┐    │ ├──────────┤     │ │     ┌────────────┐ │
+│ │Alertmanager│    │ │ ┌───►│Port: 3000│ │    │                 │    │ │Port: 3000│◄──┐ │ │     │Alertmanager│ │
+│ ├────────────┤    │ │ │    └──────────┘ │    │                 │    │ └──────────┘   │ │ │     ├────────────┤ │
+│ │Port: 9093  │◄─┐ │ │ │             ▲   └──┐ │                 │ ┌──┘   ▲            │ │ │  ┌─►│Port: 9093  │ │
+│ └────────────┘  │ │ │ │    /grafana ┤      │ │                 │ │      ├ /grafana   │ │ │  │  └────────────┘ │
+│                 │ │ │ │    ┌────────┴──┐ / │ │                 │ │ / ┌──┴────────┐   │ │ │  │                 │
+│ ┌─────────────┐ │ │ │ │    │Nginx      ├─┴─┘ │ ┌─────────────┐ │ └─┴─┤Nginx      │   │ │ │  │ ┌─────────────┐ │
+│ │Node-Exporter│ │ │ │ │    ├───────────┤     │ │Node-Exporter│ │     ├───────────┤   │ │ │  │ │Node-Exporter│ │
+│ └─────────────┘ │ │ │ │ ┌─►│Port: 443  │◄────┘ └─────────────┘ └──►  │Port: 443  │◄┐ │ │ │  │ └─────────────┘ │
+│  ▲      ┌─────┐ │ │ │ │ │  └───────────┘        ▲      ┌─────┐       └───────┬───┘ │ │ │ │  │  ▲      ┌─────┐ │
+│  │ ┌───►│Crash│ │ │ │ │ │                       │ ┌───►│Crash│               │     │ │ │ │  │  │ ┌───►│Crash│ │
+│  │ │    └─────┘ │ │ │ │ │                       │ │    └─────┘               │     │ │ │ │  │  │ │    └─────┘ │
+│ ┌┴─┴────────────┴─┴─┴─┴─┴─────────┐  ┌──────────┴─┴────────────────────┐  ┌──┴─────┴─┴─┴─┴──┴──┴─┴──────────┐ │
+│ │ Server 1 (Cephadm)              │  │ Server 2                        │  │ Server 3 (Cephmgr standby)      │ │
+│ ├─────────────────────────────────┤  ├─────────────────────────────────┤  ├─────────────────────────────────┤ │
+│ │ ILO-IP: 192.168.161.101         │  │ ILO-IP: 192.168.161.102         │  │ ILO-IP: 192.168.161.103         │ │
+│ │ IP: 192.168.161.85              │  │ IP: 192.168.161.86              │  │ IP: 192.168.161.87              │ │
+│ │ Username: s1                    │  │ Username: s2                    │  │ Username: s3                    │ │
+│ │ Hostname: srvr-1                │  │ Hostname: srvr-2                │  │ Hostname: srvr-3                │ │
+│ │                                 │  │                                 │  │                                 │ │
+│ │ OS: Ubuntu 20.04                │  │ OS: Ubuntu 20.04                │  │ OS: Ubuntu 20.04                │ │
+│ │ Kernel: 5.4.0                   │  │ Kernel: 5.4.0                   │  │ Kernel: 5.4.0                   │ │
+│ │ OS Disk Size: 15G               │  │ OS Disk Size: 15G               │  │ OS Disk Size: 15G               │ │
+│ └────────┬────┬─┬─┬─┬────┬────────┘  └────────┬────┬─┬─┬─┬────┬────────┘  └────────┬────┬─┬─┬─┬────┬────────┘ │
+│          │    │ │ │ │    │                    │    │ │ │ │    │                    │    │ │ │ │    │          │
+│          ▼    │ │ │ │    ▼                    ▼    │ │ │ │    ▼                    ▼    │ │ │ │    ▼          │
+│ ┌──────────┐  │ │ │ │  ┌──────────┐  ┌──────────┐  │ │ │ │  ┌──────────┐  ┌──────────┐  │ │ │ │  ┌──────────┐ │
+│ │OSD       │  │ │ │ │  │OSD       │  │OSD       │  │ │ │ │  │OSD       │  │OSD       │  │ │ │ │  │OSD       │ │
+│ ├──────────┤  │ │ │ │  ├──────────┤  ├──────────┤  │ │ │ │  ├──────────┤  ├──────────┤  │ │ │ │  ├──────────┤ │
+│ │Size: 121G│  │ │ │ │  │Size: 121G│  │Size: 121G│  │ │ │ │  │Size: 121G│  │Size: 121G│  │ │ │ │  │Size: 121G│ │
+│ │Disk: sda4│  │ │ │ │  │Disk: sdb4│  │Disk: sda4│  │ │ │ │  │Disk: sdb4│  │Disk: sda4│  │ │ │ │  │Disk: sdb4│ │
+│ └┬─────────┘  │ │ │ │  └────────┬─┘  └┬─────────┘  │ │ │ │  └─────────┬┘  └┬─────────┘  │ │ │ │  └─────────┬┘ │
+│  │            │ │ │ │           │     │            │ │ │ │            │    │            │ │ │ │            │  │
+│  │    ┌───────┘ │ │ └───────┐   └──┐  │    ┌───────┘ │ │ └──────┐     │    │    ┌───────┘ │ │ └───────┐    │  │
+│  │    ▼         │ │         ▼      │  │    ▼         │ │        ▼     │  ┌─┘    ▼         │ │         ▼    │  │
+│  │ ┌──────────┐ │ │ ┌──────────┐   │  │ ┌──────────┐ │ │ ┌──────────┐ │  │   ┌──────────┐ │ │ ┌──────────┐ │  │
+│  │ │OSD       │ │ │ │OSD       │   │  │ │OSD       │ │ │ │OSD       │ │  │   │OSD       │ │ │ │OSD       │ │  │
+│  │ ├──────────┤ │ │ ├──────────┤   │  │ ├──────────┤ │ │ ├──────────┤ │  │   ├──────────┤ │ │ ├──────────┤ │  │
+│  │ │Size: 136G│ │ │ │Size: 136G│   │  │ │Size: 136G│ │ │ │Size: 136G│ │  │   │Size: 136G│ │ │ │Size: 136G│ │  │
+│  │ │Disk: sdc1│ │ │ │Disk: sdd1│   │  │ │Disk: sdc1│ │ │ │Disk: sdd1│ │  │   │Disk: sdc1│ │ │ │Disk: sdd1│ │  │
+│  │ └┬─────────┘ │ │ └─────────┬┘   │  │ └┬─────────┘ │ │ └─────────┬┘ │  │   └┬─────────┘ │ │ └─────────┬┘ │  │
+│  │  │           │ │           │    │  │  │           │ │           │  │  │    │           │ │           │  │  │
+│  │  │           │ └────────┐  │    │  │  │           │ └────────┐  │  │  │    │           │ └────────┐  │  │  │
+│  │  │           ▼          │  │    │  │  │           ▼          │  │  │  │    │           ▼          │  │  │  │
+│  │  │     ┌─────────────┐  │  │    │  │  │    ┌─────────────┐   │  │  │  │    │    ┌─────────────┐   │  │  │  │
+│  │  │ ┌───┤Monitor      │  │  │    │  │  │ ┌──┤Monitor      │   │  │  │  │    │ ┌──┤Monitor      │   │  │  │  │
+│  │  │ │   ├─────────────┤  │  │    │  │  │ │  ├─────────────┤   │  │  │  │    │ │  ├─────────────┤   │  │  │  │
+│  │  │ │   │V2 Port: 3300│  │  │    │  │  │ │  │V2 Port: 3300│   │  │  │  │    │ │  │V2 Port: 3300│   │  │  │  │
+│  │  │ │   │V1 Port: 6789│  │  │    │  │  │ │  │V1 Port: 6789│   │  │  │  │    │ │  │V1 Port: 6789│   │  │  │  │
+│  │  │ │   └─────────────┘  │  │    │  │  │ │  └─────────────┘   │  │  │  │    │ │  └─────────────┘   │  │  │  │
+│  │  │ │                    │  │    │  │  │ │                    │  │  │  │    │ │                    │  │  │  │
+│  │  │ │  ┌───────────────┐ │  │    │  │  │ │ ┌───────────────┐  │  │  │  │    │ │ ┌───────────────┐  │  │  │  │
+│  │  │ │  │Metadata Server│◄┘  │    │  │  │ │ │Metadata Server│◄─┘  │  │  │    │ │ │Metadata Server│◄─┘  │  │  │
+│  │  │ │  └───────┬───────┘    │    │  │  │ │ └───────┬───────┘     │  │  │    │ │ └───────┬───────┘     │  │  │
+│  │  │ │          │            │    │  │  │ │         │             │  │  │    │ │         │             │  │  │
+│  │  │ │          │            │    ▼  ▼  │ ▼         ▼             ▼  ▼  ▼    │ │         │             │  │  │
+│  │  │ │          │            └──►┌──────┴────────────────────────────────┐◄──┘ │         │             │  │  │
+│  │  │ │          │                │Ceph Cluster                           │     │         │             │  │  │
+│  │  │ │          └───────────────►├───────────────────────────────────────┤◄────┘         │             │  │  │
+│  │  │ │                           │fsid: 7eec669e-b41a-11ec-9909-e160ce8bf│               │             │  │  │
+│  │  │ └──────────────────────────►│Raw Storage Capacity: 1.5TiB           │◄──────────────┘             │  │  │
+│  │  │                             │                                       │                             │  │  │
+│  │  └────────────────────────────►│                                       │◄────────────────────────────┘  │  │
+│  │                                │                                       │                                │  │
+│  └───────────────────────────────►│                                       │◄───────────────────────────────┘  │
+│                                   │                                       │                                   │
+└──────────────────────────────────►└─────────────────┬─┬─┬─────────────────┘◄──────────────────────────────────┘
+                                                      │ │ │
+                                  ┌───────────────────┘ │ └────────────────┐
+                                  ▼                     ▼                  ▼
+        ┌────────────────────────────┐ ┌────────────────────────────┐ ┌────────────────────────────┐
+        │Pool                        │ │Pool                        │ │Pool                        │
+        ├────────────────────────────┤ ├────────────────────────────┤ ├────────────────────────────┤
+        │Name: rbd                   │ │Name: cephfs_meta           │ │Name: cephfs_data           │
+        │Type: replication           │ │Type: replication           │ │Type: replication           │
+        │Replica Count: 3            │ │Replica Count: 3            │ │Replica Count: 3            │
+        │PG Count: 256               │ │PG Count: 256               │ │PG Count: 256               │
+        │Applications: rbd           │ │Applications: cephfs        │ │Applications: cephfs        │
+        └─┬─┬────────────────────────┘ └──────────────────────────┬─┘ └──────┬─────────────────────┘
+          │ │                                                     │          │
+          │ └───────────────────────────────┐                     └────────┐ │
+          ▼                                 ▼                              ▼ ▼
+    ┌──────────────┬─┬─────────────┐  ┌──────────────┬─┬─────────────┐    ┌────────────┬─────────────────┐
+    │Namespace     │ │User         │  │Namespace     │ │User         │    │User        │                 │
+    ├──────────────┤ ├─────────────┤  ├──────────────┤ ├─────────────┤    ├────────────┤                 │
+    │Name: telegraf│ │ID: telegraf │  │Name: agama   │ │ID: agama    │    │ID: vmfs    │                 │
+    ├──────────────┘ └─────────────┤  ├──────────────┘ └─────────────┤    ├────────────┘                 │
+    │                              │  │                              │    │                              │
+    ├──────────────────────────────┤  ├──────────────────────────────┤    ├──────────────────────────────┤
+    │Block Image                   │  │Block Image                   │    │File System                   │
+    ├──────────────────────────────┤  ├──────────────────────────────┤    ├──────────────────────────────┤
+    │Name: telegraf-image          │  │Name: agama-image             │    │Name: cephfs                  │
+    │Size: 5G                      │  │Size: 5G                      │    │                              │
+    └──────────────────────────────┘  └──────────────────────────────┘    └──────────────────────────────┘
+```
+
+
+___
 ### Ceph Services
 Each server has:
 * Monitor (x1)
@@ -123,7 +242,7 @@ There are 3 hosts
 * s1 - server 1 | 192.168.161.85
 * s2 - server 2 | 192.168.161.86
 * s3 - server 3 | 192.168.161.87
-* srvr - Outside server which facilitates main server restarts
+* vm - ubuntu vm | 192.168.180.42 
 ---
 ### Connecting with the hosts
 Ansible connects to the root account of the hosts through the id_rsa key in the project root directory
@@ -144,7 +263,8 @@ The playbook is separated into x plays
 * cephmgr requirements -> Installs cephmgr services requirements and sets up load balancing
 * cephadm -> Installs cephadm and bootstraps the cluster, then installs all the services on all the hosts
 * ceph config -> Configures ceph services after install
-* rbd -> Sets up rados block device images for services to use
+* storage -> Sets up rados block device images and ceph filesystems
+* logs -> Sets up rsyslog to send all logs to a central telegraf/influxdb server
 * full reset -> fully resets the hp_servers to base ubuntu
 * post-tasks -> encrypts the id_rsa key
 ___
@@ -190,15 +310,18 @@ ___
     * node-exporter_spec.yaml -> Node-exporter specification file used to create node-exporter instances
 * ceph_mgr -> Configures ceph manager and its services
 * rbd -> Creates namespaces, users and rbd images for services that use the cluster
+* cephfs -> Creates pools for filesystems and filesystems
+* rsyslog -> Redirects all syslogs to a telegraf server
+  * Files:
+    * rsyslog.conf -> top-level config file for rsyslog
+  * Templates:
+    * rsyslog-telegraf.conf -> rsyslog config file
+    * syslog-lograte -> sets up faster log rotation for /var/log/syslog
 * full_reset -> Fully resets all servers except the external one
   * Templates:
-    * 000-default.conf -> apache2 site conf
-    * apache.conf -> apache2 conf
     * auto-install-1.cfg -> cloud-init conf for server 1
     * auto-install-2.cfg -> cloud-init conf for server 2
     * auto-install-3.cfg -> cloud-init conf for server 3
-    * ngrok.service -> ngrok service file
-    * ngrok.yaml -> ngrok conf file
 ___
 ### Group vars
 **all.yaml**:

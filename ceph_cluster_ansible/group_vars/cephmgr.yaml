@@ -2,7 +2,7 @@ dashboard_port: 8080
 grafana_port: 3000
 prometheus_port: 9095
 alertmanager_port: 9093
-agama_image_size: 500G
+agama_image_size: 5G
 telegraf_image_size: 5G
 cloudflare_zone_edit_token: !vault |
           $ANSIBLE_VAULT;1.1;AES256

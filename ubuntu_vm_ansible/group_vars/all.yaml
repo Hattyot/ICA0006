@@ -24,6 +24,7 @@ mysql_port: 3306
 influxdb_port: 8086
 telegraf_port: 6514
 grafana_port: 3000
+apache_port: 5000
 mysql_host: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
 mysql_root_password: !vault |
           $ANSIBLE_VAULT;1.1;AES256
@@ -32,3 +33,5 @@ mysql_root_password: !vault |
           65626132646164626134396632306363326133363238313939316365663738623363663363323133
           3763636662353437650a363936616565643132633263666639353737356264303637306463343932
           6431
+
+apache_dir: /var/www/html

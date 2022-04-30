@@ -1,0 +1,38 @@
+- name: check if data pool exists
+  shell:
+    cmd: "ceph osd pool ls | grep cephfs_data"
+  register: data_pool
+  changed_when: false
+  failed_when: false
+
+- name: create data pool
+  shell:
+    cmd: "ceph osd pool create cepgfs_data {{ osd_pg_per_pool }} replicated"
+  when: data_pool.stdout == ""
+
+- name: check if metadata pool exists
+  shell:
+    cmd: "ceph osd pool ls | grep cephfs_meta"
+  register: meta_pool
+  changed_when: false
+  failed_when: false
+
+- name: create data pool
+  shell:
+    cmd: "ceph osd pool create cephfs_meta {{ osd_pg_per_pool }} replicated"
+  when: meta_pool.stdout == ""
+
+
+- name: check if filesystem exists
+  shell:
+    cmd: "ceph fs ls | grep cephfs"
+  register: filesystem
+  changed_when: false
+  failed_when: false
+
+- name: create filesystem
+  shell:
+    cmd: "ceph fs new cephfs cephfs_meta cephfs_data"
+  when: filesystem.stdout == ""
+
+- import_tasks: vm.yaml

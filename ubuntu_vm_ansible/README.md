@@ -21,6 +21,9 @@ ___
 ### Grafana
 Grafana is a monitoring tool, in our case used to easily visualise and manage logs.\
 Port: 3000
+### Apache2
+Apache2 is an http server, in our case we use it as a front for a file server.\
+Port: 5000
 ___
 ### Nginx
 Nginx directs traffic towards the vm's services. \
@@ -29,6 +32,7 @@ Paths:
 * `/influxdb` -> influxdb
 * `/telegraf` -> telegraf
 * `/grafana` -> grafana
+* `/apache` -> apache
 ___
 ## Backend Services
 ___
@@ -77,7 +81,7 @@ The playbook is separated into x plays
 * init -> The very basic stuff that needs to come before everything else, apt update, hosts file update etc.
 * requirements -> Install the required software
 * network -> Sets up the network aspects on the server, creates certificates and sets up dns and nginx
-* storage -> Install storge services and sets up the connection to the ceph cluster through rbd devices
+* storage -> Install storge services and sets up the connection to the ceph cluster
 * services -> Install services which use the storage services
 * post-tasks -> Encrypts the id_rsa key
 ___
@@ -117,6 +121,12 @@ ___
 * rbd -> Maps and mounts needed rbd images for services
   * Files:
     * rbdmap -> File that's used to automatically map rbd-images at boot
+* cephfs -> Mounts ceph filesystems for use by services
+* apache -> Sets up apache2 as a file server
+  * Templates:
+    * 000-default.conf -> Apache2 virtualhost
+    * apache.conf -> Apache config file
+    * ports.conf -> Sets apache to listen on port 5000
 * agama -> Installs and launches agama service
   * Templates:
     * docker-compose.yaml -> Docker-compose file used to launch agama
@@ -147,6 +157,7 @@ ___
 * grafana_port -> port which can be used to access grafana
 * mysql_host -> ip of the mysql host machine
 * mysql_root_password -> root password used to create mysql root user
+* apache_dir -> Root directory for apache
 
 **agama.yaml**:
 * mysql_user -> agama mysql user used to access agama database

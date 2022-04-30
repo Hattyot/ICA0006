@@ -13,3 +13,8 @@
     name: rsyslog
     state: started
     enabled: yes
+
+- name: copy over log rotate conf
+  template:
+    src: syslog-logrotate
+    dest: /etc/logrotate.d/rsyslog

@@ -16,9 +16,9 @@ services:
       - /opt/influxdb/influxdb.conf:/etc/influxdb/influxdb.conf:ro
       - /opt/influxdb/influxdb-init.iql:/docker-entrypoint-initdb.d/influxdb-init.iql:ro
     logging:
-      driver: "journald"
+      driver: "syslog"
       options:
-        tag: "docker/{{.Name}}"
+        tag: "docker/{{'{{.Name}}'}}"
 
   telegraf:
     image: telegraf:latest
@@ -28,14 +28,13 @@ services:
     volumes:
     - /opt/influxdb/telegraf.conf:/etc/telegraf/telegraf.conf:ro
     depends_on:
-      influxdb:
-        condition: service_completed_successfully
+      - influxdb
     links:
       - influxdb
     logging:
-      driver: "journald"
+      driver: "syslog"
       options:
-        tag: "docker/{{.Name}}"
+        tag: "docker/{{'{{.Name}}'}}"
 
 
 volumes:

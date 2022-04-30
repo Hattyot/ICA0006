@@ -5,9 +5,6 @@
   changed_when: false
   failed_when: false
 
-- name: turn of pg autoscaling
-  shell: "ceph osd pool set noautoscale"
-
 - name: create rbd pool
   shell:
     cmd: "ceph osd pool create rbd {{ osd_pg_per_pool }} replicated"

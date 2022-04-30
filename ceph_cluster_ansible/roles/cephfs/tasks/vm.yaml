@@ -1,0 +1,10 @@
+- name: check if vmfs user exists
+  stat:
+    path: "/etc/ceph/ceph.client.vmfs.keyring"
+  register: vmfs_keyring
+  changed_when: false
+
+- name: create vmfs user for filesystem data pool
+  shell:
+    cmd: ceph auth get-or-create client.vmfs mon 'allow r' mds 'allow rw' osd 'allow rw pool=cephfs_data' -o /etc/ceph/ceph.client.vmfs.keyring
+  when: not vmfs_keyring.stat.exists

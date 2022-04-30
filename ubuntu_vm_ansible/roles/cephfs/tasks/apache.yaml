@@ -1,0 +1,12 @@
+- name: ensure /var/www/html dir exists
+  file:
+    path: /var/www/html
+    state: directory
+
+- name: mount cephfs at boot to /var/www/html
+  mount:
+    path: /var/www/html
+    src: none
+    fstype: fuse.ceph
+    opts: ceph.id=vmfs,_netdev,ceph.conf=/etc/ceph/ceph.conf,defaults
+    state: mounted
