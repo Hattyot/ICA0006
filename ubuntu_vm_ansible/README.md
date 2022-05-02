@@ -21,6 +21,7 @@ ___
 ### Grafana
 Grafana is a monitoring tool, in our case used to easily visualise and manage logs.\
 Port: 3000
+___
 ### Apache2
 Apache2 is an http server, in our case we use it as a front for a file server.\
 Port: 5000
@@ -53,6 +54,9 @@ Databases:
 * telegraf
   * `rbd image` -> telegraf-image
   * `mount-point` -> /opt/influxdb/data/data/telegraf
+___
+### CephFS
+CephFS is mounted over the main apache2 directory
 ___
 # Ansible
 ___
